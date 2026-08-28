@@ -1,7 +1,7 @@
 import { IconSearch, IconDownload, IconFileText } from './icons';
 
 export default function TransactionFilter({
-  t, search, setSearch, startDate, setStartDate, endDate, setEndDate,
+  t = {}, search, setSearch, startDate, setStartDate, endDate, setEndDate,
   handleQuickFilter, handleExportExcel, handleExportPdf
 }) {
   return (

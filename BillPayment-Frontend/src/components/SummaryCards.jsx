@@ -1,12 +1,12 @@
 import { IconActivity, IconCheckCircle, IconAlertTriangle } from './icons';
 
-export default function SummaryCards({ t, transactions, mismatches }) {
+export default function SummaryCards({ t = {}, transactions = [], mismatches = [] }) {
   const pendingCount = mismatches.filter(m => m.resolutionStatus === 'PENDING').length;
 
   const cards = [
-    { label: t.totalTxn, value: transactions.length, sub: t.realtimeSynced.replace('● ', ''), icon: IconActivity, tone: 'slate' },
-    { label: t.successRate, value: '98.4%', sub: t.stableGateway, icon: IconCheckCircle, tone: 'emerald' },
-    { label: t.failedMismatch, value: pendingCount, sub: t.requiresAction, icon: IconAlertTriangle, tone: 'rose' },
+    { label: t?.totalTxn || '', value: transactions.length, sub: t?.realtimeSynced ? t.realtimeSynced.replace('● ', '') : '', icon: IconActivity, tone: 'slate' },
+    { label: t?.successRate || '', value: '98.4%', sub: t?.stableGateway || '', icon: IconCheckCircle, tone: 'emerald' },
+    { label: t?.failedMismatch || '', value: pendingCount, sub: t?.requiresAction || '', icon: IconAlertTriangle, tone: 'rose' },
   ];
 
   const toneMap = {
@@ -31,14 +31,14 @@ export default function SummaryCards({ t, transactions, mismatches }) {
       ))}
       <div className="bg-white p-6">
         <div className="flex items-start justify-between mb-4">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{t.systemStatus}</p>
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{t?.systemStatus || ''}</p>
           <span className="relative flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
           </span>
         </div>
-        <p className="text-3xl font-semibold text-slate-900">{t.online}</p>
-        <p className="text-[13px] mt-1.5 text-slate-500">{t.connectedPartners}</p>
+        <p className="text-3xl font-semibold text-slate-900">{t?.online || ''}</p>
+        <p className="text-[13px] mt-1.5 text-slate-500">{t?.connectedPartners || ''}</p>
       </div>
     </div>
   );

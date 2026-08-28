@@ -1,11 +1,11 @@
 import { IconLandmark, IconBarChart, IconAlertTriangle, IconCreditCard, IconGlobe } from './icons';
 
-export default function Header({ t, lang, setLang, activeTab, setActiveTab }) {
-  const navItems = [
-    { key: 'monitoring', label: t.tabMonitoring.replace(/^\S+\s/, ''), icon: IconBarChart },
-    { key: 'mismatch', label: t.tabMismatch.replace(/^\S+\s/, ''), icon: IconAlertTriangle },
-    { key: 'payment', label: t.tabPayment.replace(/^\S+\s/, ''), icon: IconCreditCard },
-  ];
+export default function Header({ t = {}, lang, setLang, activeTab, setActiveTab }) {
+    const navItems = [
+        { key: 'monitoring', label: t?.tabMonitoring ? t.tabMonitoring.replace(/\s+/s, '') : '', icon: IconBarChart },
+        { key: 'mismatch', label: t?.tabMismatch ? t.tabMismatch.replace(/\s+/s, '') : '', icon: IconAlertTriangle },
+        { key: 'payment', label: t?.tabPayment ? t.tabPayment.replace(/\s+/s, '') : '', icon: IconCreditCard },
+    ];
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 print:hidden">
@@ -16,8 +16,8 @@ export default function Header({ t, lang, setLang, activeTab, setActiveTab }) {
               <IconLandmark size={20} />
             </div>
             <div className="min-w-0 leading-tight">
-              <p className="font-semibold text-base text-slate-900 truncate tracking-tight">{t.appName}</p>
-              <p className="text-[13px] text-slate-500 truncate">{t.appSub}</p>
+              <p className="font-semibold text-base text-slate-900 truncate tracking-tight">{t?.appName}</p>
+              <p className="text-[13px] text-slate-500 truncate">{t?.appSub}</p>
             </div>
           </div>
 

@@ -9,7 +9,7 @@ import PaySimulator from './components/PaySimulator';
 
 export default function App() {
   const [lang, setLang] = useState('lo');
-  const t = translations[lang];
+  const t = translations[lang] || translations['lo'];
 
   const [activeTab, setActiveTab] = useState('monitoring');
 

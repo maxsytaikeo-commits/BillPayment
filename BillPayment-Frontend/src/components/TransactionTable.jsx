@@ -1,6 +1,6 @@
 import { IconInbox } from './icons';
 
-export default function TransactionTable({ t, filteredTransactions, lang }) {
+export default function TransactionTable({ t = {}, filteredTransactions = [], lang = 'en' }) {
   return (
     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
