@@ -8,7 +8,7 @@ export const translations = {
     totalTxn: "ທຸລະກຳທັງໝົດ (Total Txn)",
     realtimeSynced: "● ຊິ້ງຂໍ້ມູນແບບ Real-time",
     successRate: "ອັດຕາສຳເລັດ (Success Rate)",
-    stableGateway: "ເກດເວີຍມາດຕະຖານ",
+    stableGateway: "ເກດເວມາດຕະຖານ",
     failedMismatch: "ລົ້ມເຫຼວ / ບໍ່ຕົງກັນ (Failed)",
     requiresAction: "ຕ້ອງກວດສອບ",
     systemStatus: "ສະຖານະລະບົບ",

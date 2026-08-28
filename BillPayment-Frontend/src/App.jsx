@@ -6,9 +6,11 @@ import TransactionFilter from './components/TransactionFilter';
 import TransactionTable from './components/TransactionTable';
 import MismatchLog from './components/MismatchLog';
 import PaySimulator from './components/PaySimulator';
+import Login from './components/Login';
 
 export default function App() {
   const [lang, setLang] = useState('lo');
+  const [user, setUser] = useState(null);
   const t = translations[lang] || translations['lo'];
 
   const [activeTab, setActiveTab] = useState('monitoring');
@@ -33,6 +35,17 @@ export default function App() {
   const [consumerNo, setConsumerNo] = useState('012345678');
   const [billData, setBillData] = useState(null);
   const [receiptInfo, setReceiptInfo] = useState(null);
+
+  // ຫຼັງ login ສຳເລັດ ໃຫ້ກຳນົດ tab ເລີ່ມຕົ້ນຕາມ role
+  const handleLogin = (u) => {
+    setUser(u);
+    setActiveTab(u.role === 'customer' ? 'payment' : 'monitoring');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setActiveTab('monitoring');
+  };
 
   const handleQuickFilter = (type) => {
     const today = new Date();
@@ -131,12 +144,26 @@ export default function App() {
     return matchesSearch && matchesStartDate && matchesEndDate;
   });
 
+  // ຖ້າຍັງບໍ່ Login ໃຫ້ສະແດງໜ້າ Login ກ່ອນ
+  if (!user) {
+    return <Login lang={lang} setLang={setLang} onLogin={handleLogin} />;
+  }
+
   return (
     <div className="min-h-screen w-full bg-slate-50 text-slate-800 font-sans flex flex-col">
-      <Header t={t} lang={lang} setLang={setLang} activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Header
+        t={t}
+        lang={lang}
+        setLang={setLang}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        user={user}
+        onLogout={handleLogout}
+      />
 
-      <main className="w-full flex-1 px-6 py-6 space-y-5">
-        {activeTab === 'monitoring' && (
+      <main className="w-full flex-1 max-w-7xl mx-auto px-6 py-8 space-y-6">
+        {/* ໜ້າສະເພາະພະນັກງານ Bank ເທົ່ານັ້ນ */}
+        {activeTab === 'monitoring' && user.role === 'staff' && (
           <div className="space-y-5">
             <SummaryCards t={t} transactions={transactions} mismatches={mismatches} />
             <TransactionFilter
@@ -155,10 +182,11 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'mismatch' && (
+        {activeTab === 'mismatch' && user.role === 'staff' && (
           <MismatchLog t={t} mismatches={mismatches} handleRetry={handleRetry} />
         )}
 
+        {/* ໜ້າສະເພາະລູກຄ້າ (ແຕ່ staff ກໍ່ເບິ່ງໄດ້ ສຳລັບທົດສອບ) */}
         {activeTab === 'payment' && (
           <PaySimulator
             t={t}

@@ -103,7 +103,7 @@ export const IconLandmark = ({ size = 18, className = '' }) => (
 );
 
 export const IconChevronDown = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+  <svg width={size} height={size} viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="6 9 12 15 18 9" />
   </svg>
 );

@@ -54,7 +54,7 @@ export default function MismatchLog({ t, mismatches, handleRetry }) {
                   </td>
                   <td className="py-4 px-5 text-center">
                     {item.resolutionStatus === 'PENDING' ? (
-                      <button onClick={() => handleRetry(item.xref)} className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-3.5 py-2 rounded-lg text-[13px] transition-colors">
+                      <button onClick={() => handleRetry(item.xref)} className="inline-flex items-center gap-2 bg-slate-900 hover:bg-[#16304d] text-white font-medium px-3.5 py-2 rounded-lg text-[13px] transition-colors">
                         <IconRefresh size={14} /> {t.retryApi.replace(/^\S+\s/, '')}
                       </button>
                     ) : (

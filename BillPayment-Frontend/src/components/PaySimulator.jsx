@@ -1,6 +1,14 @@
-import { IconZap, IconSmartphone, IconDroplet, IconArrowLeft, IconCheckCircle, IconRefresh, IconSearch, IconCreditCard } from './icons';
+import { IconZap, IconSmartphone, IconDroplet, IconArrowLeft, IconCheckCircle, IconRefresh, IconSearch, IconCreditCard, IconChevronDown } from './icons';
 
 const serviceIcons = { ELECTRICITY: IconZap, TELECOM: IconSmartphone, WATER: IconDroplet };
+
+// ເພີ່ມ provider ໃໝ່ຢູ່ນີ້ບ່ອນດຽວ — ຂະຫຍາຍໄດ້ບໍ່ຈຳກັດ ບໍ່ຕ້ອງແກ້ layout
+const allProviders = [
+  { code: 'EDL', name: 'ໄຟຟ້າລາວ', service: 'ELECTRICITY' },
+  { code: 'SNP', name: 'ນ້ຳປະປາ', service: 'WATER' },
+  { code: 'LAOTEL', name: 'Lao Telecom', service: 'TELECOM' },
+  { code: 'UNITEL', name: 'Unitel', service: 'TELECOM' },
+];
 
 export default function PaySimulator({
   t, lang, paymentStep, setPaymentStep, serviceCode, setServiceCode,
@@ -12,6 +20,14 @@ export default function PaySimulator({
     { n: 2, label: lang === 'lo' ? 'ຢືນຢັນ' : 'Confirm' },
     { n: 3, label: lang === 'lo' ? 'ໃບຮັບເງິນ' : 'Receipt' },
   ];
+
+  const groupedProviders = allProviders.reduce((groups, p) => {
+    (groups[p.service] = groups[p.service] || []).push(p);
+    return groups;
+  }, {});
+
+  const CurrentServiceIcon = serviceIcons[serviceCode] || IconCreditCard;
+  const currentProvider = allProviders.find(p => p.code === providerCode);
 
   return (
     <div className="space-y-6">
@@ -28,7 +44,7 @@ export default function PaySimulator({
               <div key={s.n} className="flex items-center gap-3 flex-1">
                 <div className="flex items-center gap-2.5">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
-                    paymentStep === s.n ? 'bg-slate-900 text-white' :
+                    paymentStep === s.n ? 'bg-[#1e3a5f] text-white' :
                     paymentStep > s.n ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'
                   }`}>
                     {paymentStep > s.n ? '✓' : s.n}
@@ -43,51 +59,31 @@ export default function PaySimulator({
           {paymentStep === 1 && (
             <form onSubmit={handleInquiry} className="space-y-6">
               <div>
-                <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2.5">{t.serviceType}</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {['ELECTRICITY', 'TELECOM', 'WATER'].map((sv) => {
-                    const Icon = serviceIcons[sv];
-                    const active = serviceCode === sv;
-                    return (
-                      <button
-                        type="button"
-                        key={sv}
-                        onClick={() => {
-                          setServiceCode(sv);
-                          if (sv === 'ELECTRICITY') setProviderCode('EDL');
-                          else if (sv === 'WATER') setProviderCode('SNP');
-                          else setProviderCode('LAOTEL');
-                        }}
-                        className={`flex flex-col items-center gap-2 py-4 rounded-lg border text-[13px] font-medium transition-colors ${
-                          active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                        }`}
-                      >
-                        <Icon size={20} />
-                        {sv}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
                 <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2.5">{t.providerPartner}</label>
-                <select
-                  value={providerCode}
-                  onChange={(e) => setProviderCode(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300"
-                >
-                  {serviceCode === 'ELECTRICITY' ? (
-                    <option value="EDL">EDL — ໄຟຟ້າລາວ</option>
-                  ) : serviceCode === 'WATER' ? (
-                    <option value="SNP">SNP — ນ້ຳປະປາ</option>
-                  ) : (
-                    <>
-                      <option value="LAOTEL">LAOTEL</option>
-                      <option value="UNITEL">UNITEL</option>
-                    </>
-                  )}
-                </select>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <CurrentServiceIcon size={18} />
+                  </span>
+                  <select
+                    value={providerCode}
+                    onChange={(e) => {
+                      const selected = e.target.value;
+                      setProviderCode(selected);
+                      const found = allProviders.find(p => p.code === selected);
+                      if (found) setServiceCode(found.service);
+                    }}
+                    className="w-full appearance-none bg-white border border-slate-200 rounded-lg pl-11 pr-10 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300"
+                  >
+                    {Object.entries(groupedProviders).map(([service, providers]) => (
+                      <optgroup key={service} label={service}>
+                        {providers.map(p => (
+                          <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                  <IconChevronDown size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                </div>
               </div>
 
               <div>
@@ -100,7 +96,7 @@ export default function PaySimulator({
                 />
               </div>
 
-              <button type="submit" className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-lg transition-colors text-sm">
+              <button type="submit" className="w-full flex items-center justify-center gap-2 bg-[#1e3a5f] hover:bg-[#16304d] text-white font-medium py-3 rounded-lg transition-colors text-sm">
                 <IconSearch size={16} /> {t.inquiryBtn.replace(/^\S+\s/, '')}
               </button>
             </form>
@@ -135,7 +131,7 @@ export default function PaySimulator({
                 <button onClick={() => setPaymentStep(1)} className="flex items-center justify-center gap-2 w-1/3 border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium py-3 rounded-lg text-sm transition-colors">
                   <IconArrowLeft size={16} /> {t.backBtn}
                 </button>
-                <button onClick={handleConfirmPayment} className="w-2/3 bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-lg text-sm transition-colors">
+                <button onClick={handleConfirmPayment} className="w-2/3 bg-slate-900 hover:bg-[#16304d] text-white font-medium py-3 rounded-lg text-sm transition-colors">
                   {t.confirmPayBtn.replace(/^\S+\s/, '')}
                 </button>
               </div>
@@ -160,7 +156,7 @@ export default function PaySimulator({
                 <p><span className="text-slate-500">Time</span> · {receiptInfo.payDate}</p>
               </div>
 
-              <button onClick={() => { setPaymentStep(1); setReceiptInfo(null); }} className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-lg text-sm transition-colors">
+              <button onClick={() => { setPaymentStep(1); setReceiptInfo(null); }} className="w-full flex items-center justify-center gap-2 bg-[#1e3a5f]  text-white font-medium py-3 rounded-lg text-sm transition-colors">
                 <IconRefresh size={16} /> {t.newTxnBtn.replace(/^\S+\s/, '')}
               </button>
             </div>
@@ -168,14 +164,14 @@ export default function PaySimulator({
         </div>
 
         {/* RIGHT: Summary / Info panel — fills space, always visible */}
-        <div className="bg-slate-900 text-white rounded-xl p-8 space-y-6 lg:sticky lg:top-24">
+        <div className="bg-[#1e3a5f] text-white rounded-xl p-8 space-y-6 lg:sticky lg:top-24">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-              <IconCreditCard size={20} />
+              <CurrentServiceIcon size={20} />
             </div>
             <div>
               <p className="font-semibold text-sm">
-                {serviceCode === 'ELECTRICITY' ? 'EDL — ໄຟຟ້າລາວ' : serviceCode === 'WATER' ? 'SNP — ນ້ຳປະປາ' : providerCode}
+                {currentProvider ? `${currentProvider.code} — ${currentProvider.name}` : providerCode}
               </p>
               <p className="text-[13px] text-slate-400">{serviceCode}</p>
             </div>
@@ -203,7 +199,7 @@ export default function PaySimulator({
             <ol className="space-y-3 text-[13px] text-slate-300">
               <li className="flex gap-3">
                 <span className="shrink-0 w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[11px]">1</span>
-                {lang === 'lo' ? 'ເລືອກປະເພດບໍລິການ ແລະ ໃສ່ເລກບັນຊີ' : 'Select service and enter account number'}
+                {lang === 'lo' ? 'ເລືອກຜູ້ໃຫ້ບໍລິການ ແລະ ໃສ່ເລກບັນຊີ' : 'Select provider and enter account number'}
               </li>
               <li className="flex gap-3">
                 <span className="shrink-0 w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[11px]">2</span>
