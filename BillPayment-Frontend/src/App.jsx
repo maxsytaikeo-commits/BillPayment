@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { translations } from './translations';
+import Login from './components/Login';
 import Header from './components/Header';
 import SummaryCards from './components/SummaryCards';
 import TransactionFilter from './components/TransactionFilter';
@@ -10,8 +11,8 @@ import { getTransactions, getMismatches, retryTransaction } from './api';
 
 export default function App() {
   const [lang, setLang] = useState('lo');
-  // ຍັງບໍ່ມີ Login API ຈາກ Backend — ໃຫ້ທຸກຄົນເຂົ້າໄດ້ໂດຍກົງ ຄືເປັນ staff ໄປກ່ອນ
-  const user = { username: 'guest', role: 'staff' };
+  // ປ່ຽນຈາກ hardcode user ເປັນ State ເພື່ອຮອງຮັບການ Login
+  const [user, setUser] = useState(null);
   const t = translations[lang] || translations['lo'];
 
   const [activeTab, setActiveTab] = useState('monitoring');
@@ -152,9 +153,22 @@ export default function App() {
     return matchesSearch && matchesStartDate && matchesEndDate;
   });
 
+  // ຖ້າຍັງບໍ່ Login ໃຫ້ສະແດງໜ້າ Login ກ່ອນ
+  if (!user) {
+    return <Login lang={lang} setLang={setLang} onLogin={(userData) => setUser(userData)} />;
+  }
+
   return (
     <div className="min-h-screen w-full bg-slate-50 text-slate-800 font-sans flex flex-col">
-      <Header t={t} lang={lang} setLang={setLang} activeTab={activeTab} setActiveTab={setActiveTab} user={user} onLogout={() => {}} />
+      <Header 
+        t={t} 
+        lang={lang} 
+        setLang={setLang} 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        user={user} 
+        onLogout={() => setUser(null)} 
+      />
 
       <main className="w-full flex-1 max-w-7xl mx-auto px-6 py-8 space-y-6">
         {activeTab === 'monitoring' && (

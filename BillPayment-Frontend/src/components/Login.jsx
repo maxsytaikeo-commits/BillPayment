@@ -18,7 +18,6 @@ export default function Login({ lang, setLang, onLogin }) {
 
     setLoading(true);
 
-    // TODO: ແທນທີ່ດ້ວຍການເອີ້ນ API ຈິງ ເມື່ອ Backend ພ້ອມ
     setTimeout(() => {
       setLoading(false);
       if (password === '1234') {
