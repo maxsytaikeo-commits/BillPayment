@@ -7,17 +7,16 @@ import jakarta.persistence.*;
 public class ServiceMaster {
     
     @Id
-    @Column(name = "SERVICE_CODE")
+    @Column(name = "SERVICE_CODE" , length = 20)
     private String serviceCode;
 
-    @Column(name = "SERVICE_NAME")
+    @Column(name = "SERVICE_NAME" , length = 100 , nullable = false)
     private String serviceName;
 
-    @Column(name = "STATUS")
+    @Column(name = "STATUS" , length = 20)
     private String status;
 
     public ServiceMaster(){
-
     }
     
     public String getServiceCOde(){

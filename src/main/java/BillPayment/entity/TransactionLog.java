@@ -2,23 +2,27 @@ package BillPayment.entity;
 
 import java.time.LocalDateTime;
 
-import org.springframework.cglib.core.Local;
-
+import lombok.*;
 import jakarta.persistence.*;
+
 
 @Entity
 @Table(name = "TB_TRANSACTION_LOG")
+@Getter
+@Setter
 public class TransactionLog {
     
     @Id
-    @Column(name = "XREF" , length = 50 , nullable = false)
+    @Column(name = "XREF" , length = 50)
     private String xref;
 
-    @Column(name = "SERVICE_CODE" , length = 20)
-    private String serviceCode;
+    @ManyToOne
+    @JoinColumn(name = "SERVICE_CODE" ,referencedColumnName = "SERVICE_CODE")
+    private ServiceMaster service;
 
-    @Column(name = "PROVIDER_CODE" , length = 20)
-    private String providerCode;
+    @ManyToOne
+    @JoinColumn(name = "PROVIDER_CODE" , referencedColumnName = "PROVIDER_CODE")
+    private Provider provider;
 
     @Column(name = "CONSUMER_NO" , length = 20)
     private String consumerNo;
@@ -32,11 +36,12 @@ public class TransactionLog {
     @Column(name = "RESP_CODE" , length = 20)
     private String respCode;
 
-    @Column(name = "RESP_DESC" ,length = 100)
+    @Column(name = "RESP_DESC" ,length = 200)
     private String respDesc;
 
-    @Column(name = "EX_SOURCE" , length = 20)
-    private String exSource;
+    @ManyToOne
+    @JoinColumn(name = "EX_SOURCE" , referencedColumnName = "EX_SOURCE")
+    private ExSource exSource;
 
     @Column(name = "TXN_DATE")
     private LocalDateTime txnDate;
@@ -45,104 +50,14 @@ public class TransactionLog {
     private LocalDateTime resDate;
 
     @Lob
-    @Column(name = "RES_DATA")
+    @Column(name = "RES_DATA" , length = Integer.MAX_VALUE)
     private String resData;
 
-    @Column(name = "STATEMENT_BILL_NO" ,length = 50)
-    private String statementBillNo;
+    @ManyToOne
+    @JoinColumn(name = "STATEMENT_BILL_NO" , referencedColumnName = "STATEMENT_BILL_NO")
+    private BillInvoice billInvoice;
 
     public TransactionLog(){
-
     }
-
-    public String getXref(){
-        return xref;
-    }
-    public void setXref(String xref){
-        this.xref = xref;
-    }
-
-    public String getServiceCode(){
-        return serviceCode;
-    }
-    public void setServiceCode(String serviceCode){
-        this.serviceCode = serviceCode;
-    }
-
-    public String getProviderCode(){
-        return providerCode;
-    }
-    public void setProviderCode(String providerCode){
-        this.providerCode = providerCode;
-    }
-
-    public String getConsumerNo(){
-        return consumerNo;
-    }
-    public void setConsumerNo(String consumerNo){
-        this.consumerNo = consumerNo;
-    }
-
-    public String getAction(){
-        return action;
-    }
-    public void setAction(String action){
-        this.action = action;
-    }
-
-    public String getStatus(){
-        return status;
-    }
-    public void setStatus(String status){
-        this.status = status;
-    }
-
-    public String getRespCode(){
-        return respCode;
-    }
-    public void setRespCode(String respCode){
-        this.respCode = respCode;
-    }
-
-    public String getRespDesc(){
-        return respDesc;
-    }
-    public void setRespDesc(String respDesc){
-        this.respDesc = respDesc;
-    }
-
-    public String getExSource(){
-        return exSource;
-    }
-    public void setExSoure(String exSource){
-        this.exSource = exSource;
-    }
-
-    public LocalDateTime getTxnDate(){
-        return txnDate;
-    }
-    public void setTxnDate(LocalDateTime txnDate){
-        this.txnDate = txnDate;
-    }
-
-    public LocalDateTime getResDate(){
-        return resDate;
-    }
-    public void setResDate(LocalDateTime resDate){
-        this.resDate = resDate;
-    }
-
-    public String getResData(){
-        return resData;
-    }
-    public void setResData(String resData){
-        this.resData = resData;
-    }
-
-    public String getStatementBillNo(){
-        return statementBillNo;
-    }
-    public void getStatementBillNo(String statementBillNo){
-        this.statementBillNo = statementBillNo;
-    }
+ 
 }

@@ -9,14 +9,14 @@ public class Provider {
     @Column(name = "PROVIDER_CODE" , length = 20)
     private String providerCode;
 
-    @ManyToOne
-    @JoinColumn(name = "SERVICE_CODE" , referencedColumnName = "SERVICE_CODE")
-    private String service;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "SERVICE_CODE" , referencedColumnName = "SERVICE_CODE" , nullable =  false)
+    private ServiceMaster service;
 
-    @Column(name = "PROVIDER_NAME" , length = 100)
+    @Column(name = "PROVIDER_NAME" , length = 100 , nullable = false)
     private String providerName;
 
-    @Column(name = "STATUS" , length = 20)
+    @Column(name = "STATUS" , length = 20 , nullable = false)
     private String status;
 
     public Provider(){
@@ -30,10 +30,10 @@ public class Provider {
         this.providerCode = providerCode;
     }
 
-    public String getService(){
+    public ServiceMaster getService(){
         return service;
     }
-    public void setServiceCode(String service){
+    public void setServiceCode(ServiceMaster service){
         this.service = service;
     }
 
