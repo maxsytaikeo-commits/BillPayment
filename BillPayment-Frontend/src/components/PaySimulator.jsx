@@ -1,4 +1,4 @@
-import { IconZap, IconSmartphone, IconDroplet, IconArrowLeft, IconCheckCircle, IconRefresh, IconSearch, IconCreditCard, IconChevronDown } from './icons';
+import { IconZap, IconSmartphone, IconDroplet, IconArrowLeft, IconCheckCircle, IconRefresh, IconSearch, IconCreditCard, IconChevronDown, IconAlertTriangle } from './icons';
 
 const serviceIcons = { ELECTRICITY: IconZap, TELECOM: IconSmartphone, WATER: IconDroplet };
 
@@ -13,7 +13,8 @@ const allProviderCodes = [
 export default function PaySimulator({
   t, lang, paymentStep, setPaymentStep, serviceCode, setServiceCode,
   providerCode, setProviderCode, consumerNo, setConsumerNo,
-  billData, receiptInfo, handleInquiry, handleConfirmPayment, setReceiptInfo
+  billData, receiptInfo, handleInquiry, handleConfirmPayment, setReceiptInfo,
+  inquiryLoading, inquiryError, confirmLoading, confirmError
 }) {
   const steps = [
     { n: 1, label: lang === 'lo' ? 'ກວດສອບ' : 'Inquiry' },
@@ -41,7 +42,7 @@ export default function PaySimulator({
       <div className="grid lg:grid-cols-[1.3fr_1fr] gap-6 items-start">
         {/* LEFT: Form / Confirm / Receipt */}
         <div className="bg-white border border-slate-200 rounded-xl p-8">
-          {/* NEW: modern step indicator */}
+          {/* modern step indicator */}
           <div className="flex items-center mb-9">
             {steps.map((s, i) => (
               <div key={s.n} className="flex items-center flex-1 last:flex-none">
@@ -113,8 +114,28 @@ export default function PaySimulator({
                 />
               </div>
 
-              <button type="submit" className="w-full flex items-center justify-center gap-2 bg-[#0f2942] hover:bg-[#16304d] text-white font-medium py-3 rounded-lg transition-colors text-sm">
-                <IconSearch size={16} /> {t.inquiryBtn.replace(/^\S+\s/, '')}
+              {inquiryError && (
+                <div className="flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-[13px] rounded-lg px-3.5 py-2.5">
+                  <IconAlertTriangle size={15} />
+                  {inquiryError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={inquiryLoading}
+                className="w-full flex items-center justify-center gap-2 bg-[#0f2942] hover:bg-[#16304d] disabled:opacity-60 text-white font-medium py-3 rounded-lg transition-colors text-sm"
+              >
+                {inquiryLoading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    {lang === 'lo' ? 'ກຳລັງກວດສອບ...' : 'Checking...'}
+                  </>
+                ) : (
+                  <>
+                    <IconSearch size={16} /> {t.inquiryBtn.replace(/^\S+\s/, '')}
+                  </>
+                )}
               </button>
             </form>
           )}
@@ -132,24 +153,44 @@ export default function PaySimulator({
                 </div>
                 <div className="flex justify-between border-b border-slate-200 pb-3">
                   <span className="text-slate-500 text-[13px]">{t.billAmount}</span>
-                  <span className="text-slate-700">{billData.billAmount.toLocaleString()} LAK</span>
+                  <span className="text-slate-700">{billData.billAmount?.toLocaleString()} LAK</span>
                 </div>
                 <div className="flex justify-between border-b border-slate-200 pb-3">
                   <span className="text-slate-500 text-[13px]">{t.feeAmount}</span>
-                  <span className="text-slate-700">{billData.feeAmount.toLocaleString()} LAK</span>
+                  <span className="text-slate-700">{billData.feeAmount?.toLocaleString()} LAK</span>
                 </div>
                 <div className="flex justify-between pt-1">
                   <span className="font-semibold text-slate-900">{t.totalAmount}</span>
-                  <span className="font-semibold text-slate-900 text-lg">{billData.totalAmount.toLocaleString()} LAK</span>
+                  <span className="font-semibold text-slate-900 text-lg">{billData.totalAmount?.toLocaleString()} LAK</span>
                 </div>
               </div>
 
+              {confirmError && (
+                <div className="flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-[13px] rounded-lg px-3.5 py-2.5">
+                  <IconAlertTriangle size={15} />
+                  {confirmError}
+                </div>
+              )}
+
               <div className="flex gap-3">
-                <button onClick={() => setPaymentStep(1)} className="flex items-center justify-center gap-2 w-1/3 border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium py-3 rounded-lg text-sm transition-colors">
+                <button
+                  onClick={() => setPaymentStep(1)}
+                  disabled={confirmLoading}
+                  className="flex items-center justify-center gap-2 w-1/3 border border-slate-200 hover:bg-slate-50 disabled:opacity-60 text-slate-700 font-medium py-3 rounded-lg text-sm transition-colors"
+                >
                   <IconArrowLeft size={16} /> {t.backBtn}
                 </button>
-                <button onClick={handleConfirmPayment} className="w-2/3 bg-[#0f2942] hover:bg-[#16304d] text-white font-medium py-3 rounded-lg text-sm transition-colors">
-                  {t.confirmPayBtn.replace(/^\S+\s/, '')}
+                <button
+                  onClick={handleConfirmPayment}
+                  disabled={confirmLoading}
+                  className="w-2/3 flex items-center justify-center gap-2 bg-[#0f2942] hover:bg-[#16304d] disabled:opacity-60 text-white font-medium py-3 rounded-lg text-sm transition-colors"
+                >
+                  {confirmLoading && (
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  )}
+                  {confirmLoading
+                    ? (lang === 'lo' ? 'ກຳລັງດຳເນີນການ...' : 'Processing...')
+                    : t.confirmPayBtn.replace(/^\S+\s/, '')}
                 </button>
               </div>
             </div>
@@ -169,7 +210,7 @@ export default function PaySimulator({
                 <p><span className="text-slate-500">XREF</span> · {receiptInfo.xref}</p>
                 <p><span className="text-slate-500">Customer</span> · {receiptInfo.customerName}</p>
                 <p><span className="text-slate-500">Provider</span> · {providerName(receiptInfo.providerCode)}</p>
-                <p><span className="text-slate-500">Total</span> · {receiptInfo.totalAmount.toLocaleString()} LAK</p>
+                <p><span className="text-slate-500">Total</span> · {receiptInfo.totalAmount?.toLocaleString()} LAK</p>
                 <p><span className="text-slate-500">Time</span> · {receiptInfo.payDate}</p>
               </div>
 

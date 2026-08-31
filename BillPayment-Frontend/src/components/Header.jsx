@@ -1,13 +1,18 @@
 import { IconLandmark, IconBarChart, IconAlertTriangle, IconCreditCard, IconGlobe } from './icons';
 
 export default function Header({ t, lang, setLang, activeTab, setActiveTab, user, onLogout }) {
+  // ປ່ຽນ role ໃຫ້ເປັນຕົວນ້ອຍເພື່ອປ້ອງກັນ Case sensitive
+  const userRole = user?.role?.toLowerCase() || 'customer';
+
+  // ກຳນົດສິດ: staff ເຫັນທຸກເມນູ, customer ເຫັນແຕ່ payment
   const allNavItems = [
     { key: 'monitoring', label: t?.tabMonitoring ? t.tabMonitoring.replace(/^\S+\s/, '') : '', icon: IconBarChart, roles: ['staff'] },
     { key: 'mismatch', label: t?.tabMismatch ? t.tabMismatch.replace(/^\S+\s/, '') : '', icon: IconAlertTriangle, roles: ['staff'] },
     { key: 'payment', label: t?.tabPayment ? t.tabPayment.replace(/^\S+\s/, '') : '', icon: IconCreditCard, roles: ['customer', 'staff'] },
   ];
 
-  const navItems = allNavItems.filter(item => item.roles.includes(user?.role));
+  // ກັ່ນກອງເອົາສະເພາະເມນູທີ່ Role ນັ້ນໆມີສິດເຫັນ
+  const navItems = allNavItems.filter(item => item.roles.includes(userRole));
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 print:hidden">
@@ -23,6 +28,7 @@ export default function Header({ t, lang, setLang, activeTab, setActiveTab, user
             </div>
           </div>
 
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center h-full gap-1">
             {navItems.map(({ key, label, icon: Icon }) => (
               <button
@@ -44,7 +50,7 @@ export default function Header({ t, lang, setLang, activeTab, setActiveTab, user
           <div className="flex items-center gap-2 shrink-0">
             {user && (
               <span className="hidden sm:inline-flex items-center px-2.5 py-1 bg-slate-100 rounded-md text-[11px] font-medium text-slate-500 uppercase tracking-wide">
-                {user.role === 'staff' ? (lang === 'lo' ? 'ພະນັກງານ' : 'Staff') : (lang === 'lo' ? 'ລູກຄ້າ' : 'Customer')}
+                {userRole === 'staff' ? (lang === 'lo' ? 'ພະນັກງານ' : 'Staff') : (lang === 'lo' ? 'ລູກຄ້າ' : 'Customer')}
               </span>
             )}
 

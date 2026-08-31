@@ -54,7 +54,9 @@ export async function getReport(from, to) {
   const params = new URLSearchParams({ from, to });
   return request(`/api/report?${params.toString()}`);
 }
-export async function login(username, password) {
+
+// ==================== AUTH ====================
+export async function loginUser(username, password) {
   const res = await fetch(`${BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { IconLandmark, IconAlertTriangle, IconBarChart, IconAlertTriangle as IconMismatch, IconCreditCard } from './icons';
-import { login } from '../api';
+import { loginUser } from '../api';
 
 export default function Login({ lang, setLang, onLogin }) {
   const [username, setUsername] = useState('');
@@ -19,7 +19,7 @@ export default function Login({ lang, setLang, onLogin }) {
 
     setLoading(true);
     try {
-      const user = await login(username, password);
+      const user = await loginUser(username, password);
       // ຄາດວ່າ Backend ຕອບ user object ຈາກ tb_users (username, fullname, userStatus, ...)
       onLogin(user);
     } catch (err) {

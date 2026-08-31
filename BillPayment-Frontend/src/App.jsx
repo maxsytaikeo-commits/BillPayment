@@ -7,11 +7,10 @@ import TransactionFilter from './components/TransactionFilter';
 import TransactionTable from './components/TransactionTable';
 import MismatchLog from './components/MismatchLog';
 import PaySimulator from './components/PaySimulator';
-import { getTransactions, getMismatches, retryTransaction } from './api';
+import { getTransactions, getMismatches, retryTransaction, inquiryBill, confirmPayment } from './api';
 
 export default function App() {
   const [lang, setLang] = useState('lo');
-  // ປ່ຽນຈາກ hardcode user ເປັນ State ເພື່ອຮອງຮັບການ Login
   const [user, setUser] = useState(null);
   const t = translations[lang] || translations['lo'];
 
@@ -60,6 +59,12 @@ export default function App() {
   const [billData, setBillData] = useState(null);
   const [receiptInfo, setReceiptInfo] = useState(null);
 
+  // ==================== Pay Simulator loading/error ====================
+  const [inquiryLoading, setInquiryLoading] = useState(false);
+  const [inquiryError, setInquiryError] = useState(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [confirmError, setConfirmError] = useState(null);
+
   const handleQuickFilter = (type) => {
     const today = new Date();
     const formatDate = (d) => d.toISOString().split('T')[0];
@@ -104,30 +109,38 @@ export default function App() {
     window.print();
   };
 
-  const handleInquiry = (e) => {
+  // ==================== Bill Inquiry (API ຈິງ) ====================
+  const handleInquiry = async (e) => {
     e.preventDefault();
     if (!consumerNo) return alert(lang === 'lo' ? 'ກະລຸນາປ້ອນເລກໝາຍບັນຊີ' : 'Please enter consumer number');
 
-    setBillData({
-      statementBillNo: 'BILL-2026-998877',
-      customerName: lang === 'lo' ? 'ທ່ານ ສົມຊາຍ ໃຈດີ' : 'Mr. Somchai Jaidee',
-      providerCode,
-      serviceCode,
-      consumerNo,
-      billAmount: 150000,
-      feeAmount: 2000,
-      totalAmount: 152000,
-      dueDate: '2026-06-10'
-    });
-    setPaymentStep(2);
+    setInquiryLoading(true);
+    setInquiryError(null);
+    try {
+      const bill = await inquiryBill({ serviceCode, providerCode, consumerNo });
+      setBillData(bill);
+      setPaymentStep(2);
+    } catch (err) {
+      setInquiryError(err.message);
+    } finally {
+      setInquiryLoading(false);
+    }
   };
 
-  const handleConfirmPayment = () => {
-    const newXref = 'TXN-' + Math.floor(100000 + Math.random() * 900000);
-    const currentDate = new Date().toISOString().replace('T', ' ').substring(0, 19);
-    const receipt = { xref: newXref, ...billData, payDate: currentDate };
-    setReceiptInfo(receipt);
-    setPaymentStep(3);
+  // ==================== Confirm Payment (API ຈິງ) ====================
+  const handleConfirmPayment = async () => {
+    setConfirmLoading(true);
+    setConfirmError(null);
+    try {
+      const txn = await confirmPayment(billData.statementBillNo);
+      setReceiptInfo({ ...billData, ...txn });
+      setPaymentStep(3);
+      loadTransactions(); // ອັບເດດລາຍການ Monitoring ນຳ
+    } catch (err) {
+      setConfirmError(err.message);
+    } finally {
+      setConfirmLoading(false);
+    }
   };
 
   const handleRetry = (xref) => {
@@ -153,25 +166,44 @@ export default function App() {
     return matchesSearch && matchesStartDate && matchesEndDate;
   });
 
+  // ດຶງຄ່າ role ຂອງ user ທີ່ login ເຂົ້າມາ
+  const userRole = user?.role?.toLowerCase() || 'customer';
+
   // ຖ້າຍັງບໍ່ Login ໃຫ້ສະແດງໜ້າ Login ກ່ອນ
   if (!user) {
-    return <Login lang={lang} setLang={setLang} onLogin={(userData) => setUser(userData)} />;
+    return (
+      <Login 
+        lang={lang} 
+        setLang={setLang} 
+        onLogin={(userData) => {
+          setUser(userData);
+          // ຕັ້ງຄ່າ activeTab ເລີ່ມຕົ້ນຕາມ Role ຫຼັງຈາກ Login
+          const role = userData?.role?.toLowerCase();
+          if (role === 'staff') {
+            setActiveTab('monitoring');
+          } else {
+            setActiveTab('payment');
+          }
+        }} 
+      />
+    );
   }
 
   return (
     <div className="min-h-screen w-full bg-slate-50 text-slate-800 font-sans flex flex-col">
-      <Header 
-        t={t} 
-        lang={lang} 
-        setLang={setLang} 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        user={user} 
-        onLogout={() => setUser(null)} 
+      <Header
+        t={t}
+        lang={lang}
+        setLang={setLang}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        user={user}
+        onLogout={() => setUser(null)}
       />
 
       <main className="w-full flex-1 max-w-7xl mx-auto px-6 py-8 space-y-6">
-        {activeTab === 'monitoring' && (
+        {/* ໜ້າ Monitoring: ເປີດໃຫ້ສະເພາະ staff ເບິ່ງໄດ້ */}
+        {activeTab === 'monitoring' && userRole === 'staff' && (
           <div className="space-y-5">
             {loadingTxn && <p className="text-center py-10 text-slate-400 text-sm">Loading transactions...</p>}
             {txnError && (
@@ -202,7 +234,8 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'mismatch' && (
+        {/* ໜ້າ Mismatch Log: ເປີດໃຫ້ສະເພາະ staff ເບິ່ງໄດ້ */}
+        {activeTab === 'mismatch' && userRole === 'staff' && (
           <>
             {loadingMismatch && <p className="text-center py-10 text-slate-400 text-sm">Loading mismatches...</p>}
             {mismatchError && (
@@ -216,6 +249,7 @@ export default function App() {
           </>
         )}
 
+        {/* ໜ້າ Pay Simulator: ເປີດໃຫ້ທັງ customer ແລະ staff ເຂົ້າໄດ້ */}
         {activeTab === 'payment' && (
           <PaySimulator
             t={t}
@@ -233,6 +267,10 @@ export default function App() {
             handleInquiry={handleInquiry}
             handleConfirmPayment={handleConfirmPayment}
             setReceiptInfo={setReceiptInfo}
+            inquiryLoading={inquiryLoading}
+            inquiryError={inquiryError}
+            confirmLoading={confirmLoading}
+            confirmError={confirmError}
           />
         )}
       </main>
