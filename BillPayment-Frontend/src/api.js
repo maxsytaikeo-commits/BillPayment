@@ -54,3 +54,15 @@ export async function getReport(from, to) {
   const params = new URLSearchParams({ from, to });
   return request(`/api/report?${params.toString()}`);
 }
+export async function login(username, password) {
+  const res = await fetch(`${BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(errText || 'Login failed');
+  }
+  return res.json();
+}

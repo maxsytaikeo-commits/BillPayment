@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { IconLandmark, IconAlertTriangle, IconBarChart, IconAlertTriangle as IconMismatch, IconCreditCard } from './icons';
+import { login } from '../api';
 
 export default function Login({ lang, setLang, onLogin }) {
   const [username, setUsername] = useState('');
@@ -7,7 +8,7 @@ export default function Login({ lang, setLang, onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -17,16 +18,21 @@ export default function Login({ lang, setLang, onLogin }) {
     }
 
     setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      if (password === '1234') {
-        const role = username.toLowerCase().includes('staff') ? 'staff' : 'customer';
-        onLogin({ username, role });
+    try {
+      const user = await login(username, password);
+      // ຄາດວ່າ Backend ຕອບ user object ຈາກ tb_users (username, fullname, userStatus, ...)
+      onLogin(user);
+    } catch (err) {
+      if (err.message.includes('404')) {
+        setError(lang === 'lo'
+          ? 'ລະບົບ Login ຍັງບໍ່ພ້ອມ (Backend ຍັງບໍ່ມີ endpoint /api/auth/login)'
+          : 'Login system not ready yet (Backend missing /api/auth/login)');
       } else {
         setError(lang === 'lo' ? 'ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ' : 'Invalid username or password');
       }
-    }, 500);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const features = [
@@ -157,15 +163,19 @@ export default function Login({ lang, setLang, onLogin }) {
 
           <div className="mt-6 p-4 bg-white border border-slate-200 rounded-lg space-y-1.5">
             <p className="text-[12px] font-medium text-slate-500 uppercase tracking-wide mb-2">
-              {lang === 'lo' ? 'ບັນຊີທົດລອງ' : 'Demo accounts'}
+              {lang === 'lo' ? 'ບັນຊີທົດລອງ (ຈາກ Database)' : 'Test accounts (from Database)'}
             </p>
             <div className="flex items-center justify-between text-[12px]">
-              <span className="text-slate-500">{lang === 'lo' ? 'ລູກຄ້າ' : 'Customer'}</span>
-              <span className="font-mono text-slate-700">username: any · pass: 1234</span>
+              <span className="text-slate-500">admin</span>
+              <span className="font-mono text-slate-700">1234567890</span>
             </div>
             <div className="flex items-center justify-between text-[12px]">
-              <span className="text-slate-500">{lang === 'lo' ? 'ພະນັກງານ' : 'Staff'}</span>
-              <span className="font-mono text-slate-700">username: staff* · pass: 1234</span>
+              <span className="text-slate-500">john.doe</span>
+              <span className="font-mono text-slate-700">0987654321</span>
+            </div>
+            <div className="flex items-center justify-between text-[12px]">
+              <span className="text-slate-500">jane.smith</span>
+              <span className="font-mono text-slate-700">2233445566</span>
             </div>
           </div>
 
