@@ -2,12 +2,12 @@ import { IconZap, IconSmartphone, IconDroplet, IconArrowLeft, IconCheckCircle, I
 
 const serviceIcons = { ELECTRICITY: IconZap, TELECOM: IconSmartphone, WATER: IconDroplet };
 
-// ເພີ່ມ provider ໃໝ່ຢູ່ນີ້ບ່ອນດຽວ — ຂະຫຍາຍໄດ້ບໍ່ຈຳກັດ ບໍ່ຕ້ອງແກ້ layout
-const allProviders = [
-  { code: 'EDL', name: 'ໄຟຟ້າລາວ', service: 'ELECTRICITY' },
-  { code: 'SNP', name: 'ນ້ຳປະປາ', service: 'WATER' },
-  { code: 'LAOTEL', name: 'Lao Telecom', service: 'TELECOM' },
-  { code: 'UNITEL', name: 'Unitel', service: 'TELECOM' },
+// codes ຄົງທີ່ — ຊື່ສະແດງຜົນມາຈາກ t.providerNames ຕາມພາສາ
+const allProviderCodes = [
+  { code: 'EDL', service: 'ELECTRICITY' },
+  { code: 'SNP', service: 'WATER' },
+  { code: 'LAOTEL', service: 'TELECOM' },
+  { code: 'UNITEL', service: 'TELECOM' },
 ];
 
 export default function PaySimulator({
@@ -21,13 +21,15 @@ export default function PaySimulator({
     { n: 3, label: lang === 'lo' ? 'ໃບຮັບເງິນ' : 'Receipt' },
   ];
 
-  const groupedProviders = allProviders.reduce((groups, p) => {
+  const providerName = (code) => t.providerNames?.[code] || code;
+
+  const groupedProviders = allProviderCodes.reduce((groups, p) => {
     (groups[p.service] = groups[p.service] || []).push(p);
     return groups;
   }, {});
 
   const CurrentServiceIcon = serviceIcons[serviceCode] || IconCreditCard;
-  const currentProvider = allProviders.find(p => p.code === providerCode);
+  const currentProvider = allProviderCodes.find(p => p.code === providerCode);
 
   return (
     <div className="space-y-6">
@@ -39,19 +41,34 @@ export default function PaySimulator({
       <div className="grid lg:grid-cols-[1.3fr_1fr] gap-6 items-start">
         {/* LEFT: Form / Confirm / Receipt */}
         <div className="bg-white border border-slate-200 rounded-xl p-8">
-          <div className="flex items-center gap-3 mb-8">
+          {/* NEW: modern step indicator */}
+          <div className="flex items-center mb-9">
             {steps.map((s, i) => (
-              <div key={s.n} className="flex items-center gap-3 flex-1">
-                <div className="flex items-center gap-2.5">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
-                    paymentStep === s.n ? 'bg-[#1e3a5f] text-white' :
-                    paymentStep > s.n ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'
+              <div key={s.n} className="flex items-center flex-1 last:flex-none">
+                <div className="flex flex-col items-center gap-2">
+                  <div className={`relative w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-semibold transition-all duration-300 ${
+                    paymentStep === s.n
+                      ? 'bg-[#0f2942] text-white ring-4 ring-[#0f2942]/10'
+                      : paymentStep > s.n
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-slate-100 text-slate-400'
                   }`}>
-                    {paymentStep > s.n ? '✓' : s.n}
+                    {paymentStep > s.n ? (
+                      <IconCheckCircle size={16} />
+                    ) : s.n}
                   </div>
-                  <span className={`text-[13px] font-medium hidden sm:inline ${paymentStep === s.n ? 'text-slate-900' : 'text-slate-400'}`}>{s.label}</span>
+                  <span className={`text-[11px] font-medium whitespace-nowrap ${
+                    paymentStep === s.n ? 'text-slate-900' : paymentStep > s.n ? 'text-emerald-600' : 'text-slate-400'
+                  }`}>{s.label}</span>
                 </div>
-                {i < steps.length - 1 && <div className={`flex-1 h-px ${paymentStep > s.n ? 'bg-emerald-400' : 'bg-slate-200'}`} />}
+                {i < steps.length - 1 && (
+                  <div className="flex-1 h-[2px] mx-3 -mt-5 rounded-full bg-slate-100 overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                      style={{ width: paymentStep > s.n ? '100%' : '0%' }}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -69,7 +86,7 @@ export default function PaySimulator({
                     onChange={(e) => {
                       const selected = e.target.value;
                       setProviderCode(selected);
-                      const found = allProviders.find(p => p.code === selected);
+                      const found = allProviderCodes.find(p => p.code === selected);
                       if (found) setServiceCode(found.service);
                     }}
                     className="w-full appearance-none bg-white border border-slate-200 rounded-lg pl-11 pr-10 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300"
@@ -77,7 +94,7 @@ export default function PaySimulator({
                     {Object.entries(groupedProviders).map(([service, providers]) => (
                       <optgroup key={service} label={service}>
                         {providers.map(p => (
-                          <option key={p.code} value={p.code}>{p.code} — {p.name}</option>
+                          <option key={p.code} value={p.code}>{p.code} — {providerName(p.code)}</option>
                         ))}
                       </optgroup>
                     ))}
@@ -96,7 +113,7 @@ export default function PaySimulator({
                 />
               </div>
 
-              <button type="submit" className="w-full flex items-center justify-center gap-2 bg-[#1e3a5f] hover:bg-[#16304d] text-white font-medium py-3 rounded-lg transition-colors text-sm">
+              <button type="submit" className="w-full flex items-center justify-center gap-2 bg-[#0f2942] hover:bg-[#16304d] text-white font-medium py-3 rounded-lg transition-colors text-sm">
                 <IconSearch size={16} /> {t.inquiryBtn.replace(/^\S+\s/, '')}
               </button>
             </form>
@@ -131,7 +148,7 @@ export default function PaySimulator({
                 <button onClick={() => setPaymentStep(1)} className="flex items-center justify-center gap-2 w-1/3 border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium py-3 rounded-lg text-sm transition-colors">
                   <IconArrowLeft size={16} /> {t.backBtn}
                 </button>
-                <button onClick={handleConfirmPayment} className="w-2/3 bg-slate-900 hover:bg-[#16304d] text-white font-medium py-3 rounded-lg text-sm transition-colors">
+                <button onClick={handleConfirmPayment} className="w-2/3 bg-[#0f2942] hover:bg-[#16304d] text-white font-medium py-3 rounded-lg text-sm transition-colors">
                   {t.confirmPayBtn.replace(/^\S+\s/, '')}
                 </button>
               </div>
@@ -151,27 +168,27 @@ export default function PaySimulator({
                 <p className="text-slate-500 pb-3 border-b border-slate-200 text-center font-sans font-semibold text-[13px] uppercase tracking-wide">{t.officialReceipt}</p>
                 <p><span className="text-slate-500">XREF</span> · {receiptInfo.xref}</p>
                 <p><span className="text-slate-500">Customer</span> · {receiptInfo.customerName}</p>
-                <p><span className="text-slate-500">Provider</span> · {receiptInfo.providerCode}</p>
+                <p><span className="text-slate-500">Provider</span> · {providerName(receiptInfo.providerCode)}</p>
                 <p><span className="text-slate-500">Total</span> · {receiptInfo.totalAmount.toLocaleString()} LAK</p>
                 <p><span className="text-slate-500">Time</span> · {receiptInfo.payDate}</p>
               </div>
 
-              <button onClick={() => { setPaymentStep(1); setReceiptInfo(null); }} className="w-full flex items-center justify-center gap-2 bg-[#1e3a5f]  text-white font-medium py-3 rounded-lg text-sm transition-colors">
+              <button onClick={() => { setPaymentStep(1); setReceiptInfo(null); }} className="w-full flex items-center justify-center gap-2 bg-[#0f2942] hover:bg-[#16304d] text-white font-medium py-3 rounded-lg text-sm transition-colors">
                 <IconRefresh size={16} /> {t.newTxnBtn.replace(/^\S+\s/, '')}
               </button>
             </div>
           )}
         </div>
 
-        {/* RIGHT: Summary / Info panel — fills space, always visible */}
-        <div className="bg-[#1e3a5f] text-white rounded-xl p-8 space-y-6 lg:sticky lg:top-24">
+        {/* RIGHT: Summary / Info panel */}
+        <div className="bg-[#0f2942] text-white rounded-xl p-8 space-y-6 lg:sticky lg:top-24">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
               <CurrentServiceIcon size={20} />
             </div>
             <div>
               <p className="font-semibold text-sm">
-                {currentProvider ? `${currentProvider.code} — ${currentProvider.name}` : providerCode}
+                {currentProvider ? `${currentProvider.code} — ${providerName(currentProvider.code)}` : providerCode}
               </p>
               <p className="text-[13px] text-slate-400">{serviceCode}</p>
             </div>

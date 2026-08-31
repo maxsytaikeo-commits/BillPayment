@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { translations } from './translations';
 import Header from './components/Header';
 import SummaryCards from './components/SummaryCards';
@@ -6,24 +6,47 @@ import TransactionFilter from './components/TransactionFilter';
 import TransactionTable from './components/TransactionTable';
 import MismatchLog from './components/MismatchLog';
 import PaySimulator from './components/PaySimulator';
-import Login from './components/Login';
+import { getTransactions, getMismatches, retryTransaction } from './api';
 
 export default function App() {
   const [lang, setLang] = useState('lo');
-  const [user, setUser] = useState(null);
+  // ຍັງບໍ່ມີ Login API ຈາກ Backend — ໃຫ້ທຸກຄົນເຂົ້າໄດ້ໂດຍກົງ ຄືເປັນ staff ໄປກ່ອນ
+  const user = { username: 'guest', role: 'staff' };
   const t = translations[lang] || translations['lo'];
 
   const [activeTab, setActiveTab] = useState('monitoring');
 
-  const [transactions, setTransactions] = useState([
-    { xref: 'TXN-001', service: 'ELECTRICITY', provider: 'EDL', consumerNo: '012345678', action: 'PAY', status: 'SUCCESS', date: '2026-06-01 10:30:00', amount: '150,000 LAK' },
-    { xref: 'TXN-002', service: 'TELECOM', provider: 'LAOTEL', consumerNo: '2055667788', action: 'PAY', status: 'FAILED', date: '2026-06-01 11:00:00', amount: '50,000 LAK' },
-    { xref: 'TXN-003', service: 'WATER', provider: 'SNP', consumerNo: '99887766', action: 'PAY', status: 'SUCCESS', date: '2026-06-02 11:15:00', amount: '85,000 LAK' },
-  ]);
+  // ==================== ຂໍ້ມູນຈິງຈາກ Backend ====================
+  const [transactions, setTransactions] = useState([]);
+  const [loadingTxn, setLoadingTxn] = useState(true);
+  const [txnError, setTxnError] = useState(null);
 
-  const [mismatches, setMismatches] = useState([
-    { mismatchId: 1, xref: 'TXN-002', bankStatus: 'SUCCESS', providerStatus: 'FAILED', reason: 'Timeout from Provider API', resolutionStatus: 'PENDING' },
-  ]);
+  const [mismatches, setMismatches] = useState([]);
+  const [loadingMismatch, setLoadingMismatch] = useState(true);
+  const [mismatchError, setMismatchError] = useState(null);
+
+  const loadTransactions = () => {
+    setLoadingTxn(true);
+    setTxnError(null);
+    getTransactions()
+      .then(data => setTransactions(data))
+      .catch(err => setTxnError(err.message))
+      .finally(() => setLoadingTxn(false));
+  };
+
+  const loadMismatches = () => {
+    setLoadingMismatch(true);
+    setMismatchError(null);
+    getMismatches()
+      .then(data => setMismatches(data))
+      .catch(err => setMismatchError(err.message))
+      .finally(() => setLoadingMismatch(false));
+  };
+
+  useEffect(() => {
+    loadTransactions();
+    loadMismatches();
+  }, []);
 
   const [search, setSearch] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -35,17 +58,6 @@ export default function App() {
   const [consumerNo, setConsumerNo] = useState('012345678');
   const [billData, setBillData] = useState(null);
   const [receiptInfo, setReceiptInfo] = useState(null);
-
-  // ຫຼັງ login ສຳເລັດ ໃຫ້ກຳນົດ tab ເລີ່ມຕົ້ນຕາມ role
-  const handleLogin = (u) => {
-    setUser(u);
-    setActiveTab(u.role === 'customer' ? 'payment' : 'monitoring');
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    setActiveTab('monitoring');
-  };
 
   const handleQuickFilter = (type) => {
     const today = new Date();
@@ -72,8 +84,10 @@ export default function App() {
       alert(lang === 'lo' ? 'ບໍ່ມີຂໍ້ມູນສຳລັບ Export' : 'No data available to export');
       return;
     }
-    const headers = ['XREF', 'Service', 'Provider', 'Consumer No', 'Action', 'Status', 'Date', 'Amount'];
-    const rows = filteredTransactions.map(tx => [tx.xref, tx.service, tx.provider, tx.consumerNo, tx.action, tx.status, tx.date, tx.amount]);
+    const headers = ['XREF', 'Service', 'Provider', 'Consumer No', 'Action', 'Status', 'Date'];
+    const rows = filteredTransactions.map(tx => [
+      tx.xref, tx.serviceCode, tx.providerCode, tx.consumerNo, tx.action, tx.status, tx.txnDate
+    ]);
 
     let csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
@@ -110,83 +124,84 @@ export default function App() {
   const handleConfirmPayment = () => {
     const newXref = 'TXN-' + Math.floor(100000 + Math.random() * 900000);
     const currentDate = new Date().toISOString().replace('T', ' ').substring(0, 19);
-
     const receipt = { xref: newXref, ...billData, payDate: currentDate };
-    setTransactions(prev => [{
-      xref: newXref,
-      service: billData.serviceCode,
-      provider: billData.providerCode,
-      consumerNo: billData.consumerNo,
-      action: 'PAY',
-      status: 'SUCCESS',
-      date: currentDate,
-      amount: billData.totalAmount.toLocaleString() + ' LAK'
-    }, ...prev]);
     setReceiptInfo(receipt);
     setPaymentStep(3);
   };
 
   const handleRetry = (xref) => {
-    alert(lang === 'lo' ? `Retry ສຳເລັດສຳລັບ XREF: ${xref}` : `Retry successful for XREF: ${xref}`);
-    setMismatches(prev => prev.map(item => item.xref === xref ? { ...item, resolutionStatus: 'RESOLVED' } : item));
+    retryTransaction(xref)
+      .then(() => {
+        alert(lang === 'lo' ? `Retry ສຳເລັດສຳລັບ XREF: ${xref}` : `Retry successful for XREF: ${xref}`);
+        loadTransactions();
+        loadMismatches();
+      })
+      .catch(err => alert('Retry failed: ' + err.message));
   };
 
   const filteredTransactions = transactions.filter(txn => {
     const matchesSearch =
-      txn.xref.toLowerCase().includes(search.toLowerCase()) ||
-      txn.consumerNo.includes(search) ||
-      txn.provider.toLowerCase().includes(search.toLowerCase());
+      (txn.xref || '').toLowerCase().includes(search.toLowerCase()) ||
+      (txn.consumerNo || '').includes(search) ||
+      (txn.providerCode || '').toLowerCase().includes(search.toLowerCase());
 
-    const txnDateOnly = txn.date.substring(0, 10);
+    const txnDateOnly = (txn.txnDate || '').substring(0, 10);
     const matchesStartDate = startDate ? txnDateOnly >= startDate : true;
     const matchesEndDate = endDate ? txnDateOnly <= endDate : true;
 
     return matchesSearch && matchesStartDate && matchesEndDate;
   });
 
-  // ຖ້າຍັງບໍ່ Login ໃຫ້ສະແດງໜ້າ Login ກ່ອນ
-  if (!user) {
-    return <Login lang={lang} setLang={setLang} onLogin={handleLogin} />;
-  }
-
   return (
     <div className="min-h-screen w-full bg-slate-50 text-slate-800 font-sans flex flex-col">
-      <Header
-        t={t}
-        lang={lang}
-        setLang={setLang}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        user={user}
-        onLogout={handleLogout}
-      />
+      <Header t={t} lang={lang} setLang={setLang} activeTab={activeTab} setActiveTab={setActiveTab} user={user} onLogout={() => {}} />
 
       <main className="w-full flex-1 max-w-7xl mx-auto px-6 py-8 space-y-6">
-        {/* ໜ້າສະເພາະພະນັກງານ Bank ເທົ່ານັ້ນ */}
-        {activeTab === 'monitoring' && user.role === 'staff' && (
+        {activeTab === 'monitoring' && (
           <div className="space-y-5">
-            <SummaryCards t={t} transactions={transactions} mismatches={mismatches} />
-            <TransactionFilter
-              t={t}
-              search={search}
-              setSearch={setSearch}
-              startDate={startDate}
-              setStartDate={setStartDate}
-              endDate={endDate}
-              setEndDate={setEndDate}
-              handleQuickFilter={handleQuickFilter}
-              handleExportExcel={handleExportExcel}
-              handleExportPdf={handleExportPdf}
-            />
-            <TransactionTable t={t} filteredTransactions={filteredTransactions} lang={lang} />
+            {loadingTxn && <p className="text-center py-10 text-slate-400 text-sm">Loading transactions...</p>}
+            {txnError && (
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-lg p-4">
+                Failed to load transactions: {txnError}
+                <br />
+                <span className="text-xs text-rose-500">ກວດວ່າ Backend ຮັນຢູ່ (localhost:8080) ແລະ CORS ຖືກຕັ້ງແລ້ວ</span>
+              </div>
+            )}
+            {!loadingTxn && !txnError && (
+              <>
+                <SummaryCards t={t} transactions={transactions} mismatches={mismatches} />
+                <TransactionFilter
+                  t={t}
+                  search={search}
+                  setSearch={setSearch}
+                  startDate={startDate}
+                  setStartDate={setStartDate}
+                  endDate={endDate}
+                  setEndDate={setEndDate}
+                  handleQuickFilter={handleQuickFilter}
+                  handleExportExcel={handleExportExcel}
+                  handleExportPdf={handleExportPdf}
+                />
+                <TransactionTable t={t} filteredTransactions={filteredTransactions} lang={lang} />
+              </>
+            )}
           </div>
         )}
 
-        {activeTab === 'mismatch' && user.role === 'staff' && (
-          <MismatchLog t={t} mismatches={mismatches} handleRetry={handleRetry} />
+        {activeTab === 'mismatch' && (
+          <>
+            {loadingMismatch && <p className="text-center py-10 text-slate-400 text-sm">Loading mismatches...</p>}
+            {mismatchError && (
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-lg p-4">
+                Failed to load mismatches: {mismatchError}
+              </div>
+            )}
+            {!loadingMismatch && !mismatchError && (
+              <MismatchLog t={t} mismatches={mismatches} handleRetry={handleRetry} />
+            )}
+          </>
         )}
 
-        {/* ໜ້າສະເພາະລູກຄ້າ (ແຕ່ staff ກໍ່ເບິ່ງໄດ້ ສຳລັບທົດສອບ) */}
         {activeTab === 'payment' && (
           <PaySimulator
             t={t}

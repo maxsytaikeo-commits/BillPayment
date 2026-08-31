@@ -1,5 +1,11 @@
 export const translations = {
   lo: {
+    providerNames: {
+    EDL: 'ໄຟຟ້າລາວ',
+    SNP: 'ນ້ຳປະປາ',
+    LAOTEL: 'Lao Telecom',
+    UNITEL: 'Unitel',
+  },
     appName: "BANKING CORE SYSTEM",
     appSub: "Bill Payment & Reconciliation Hub",
     tabMonitoring: " Monitoring",
@@ -60,6 +66,12 @@ export const translations = {
     newTxnBtn: " ເຮັດລາຍການໃໝ່"
   },
   en: {
+     providerNames: {
+    EDL: 'Electricite du Laos',
+    SNP: 'Nam Papa (Water Supply)',
+    LAOTEL: 'Lao Telecom',
+    UNITEL: 'Unitel',
+  },
     appName: "BANKING CORE SYSTEM",
     appSub: "Bill Payment & Reconciliation Hub",
     tabMonitoring: " Monitoring",

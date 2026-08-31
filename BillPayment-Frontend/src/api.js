@@ -1,39 +1,56 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
-export async function getTransactions() {
-  const res = await fetch(`${BASE_URL}/api/transactions`);
-  if (!res.ok) throw new Error('Failed to fetch transactions');
+async function request(path, options = {}) {
+  const res = await fetch(`${BASE_URL}${path}`, options);
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(errText || `Request failed: ${res.status}`);
+  }
   return res.json();
 }
 
-export async function getMismatches() {
-  const res = await fetch(`${BASE_URL}/api/mismatches`);
-  if (!res.ok) throw new Error('Failed to fetch mismatches');
-  return res.json();
+// ==================== TRANSACTION (Monitoring) ====================
+export async function getTransactions() {
+  return request('/api/transaction');
+}
+
+export async function searchTransactions({ serviceCode, status, consumerNo, from, to }) {
+  const params = new URLSearchParams();
+  if (serviceCode) params.append('serviceCode', serviceCode);
+  if (status) params.append('status', status);
+  if (consumerNo) params.append('consumerNo', consumerNo);
+  if (from) params.append('from', from);
+  if (to) params.append('to', to);
+  return request(`/api/transaction/search?${params.toString()}`);
 }
 
 export async function retryTransaction(xref) {
-  const res = await fetch(`${BASE_URL}/api/retry/${xref}`, { method: 'POST' });
-  if (!res.ok) throw new Error('Retry failed');
-  return res.json();
+  return request(`/api/transaction/${xref}/retry`, { method: 'POST' });
 }
 
-export async function inquiryBill(payload) {
-  const res = await fetch(`${BASE_URL}/api/inquiry`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error('Inquiry failed');
-  return res.json();
+// ==================== MISMATCH ====================
+export async function getMismatches(resolutionStatus) {
+  const query = resolutionStatus ? `?resolutionStatus=${resolutionStatus}` : '';
+  return request(`/api/mismatch${query}`);
 }
 
-export async function confirmPayment(payload) {
-  const res = await fetch(`${BASE_URL}/api/pay`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error('Payment failed');
-  return res.json();
+export async function resolveMismatch(mismatchId) {
+  return request(`/api/mismatch/${mismatchId}/resolve`, { method: 'POST' });
+}
+
+// ==================== BILL PAYMENT (Pay Simulator) ====================
+export async function inquiryBill({ serviceCode, providerCode, consumerNo }) {
+  const params = new URLSearchParams({ serviceCode, providerCode, consumerNo });
+  return request(`/api/billpayment/inquiry?${params.toString()}`);
+}
+
+export async function confirmPayment(statementBillNo) {
+  const params = new URLSearchParams({ statementBillNo });
+  return request(`/api/billpayment/confirm?${params.toString()}`, { method: 'POST' });
+}
+
+// ==================== REPORT ====================
+export async function getReport(from, to) {
+  const params = new URLSearchParams({ from, to });
+  return request(`/api/report?${params.toString()}`);
 }

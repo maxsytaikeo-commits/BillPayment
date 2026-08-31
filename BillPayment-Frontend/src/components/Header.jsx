@@ -62,7 +62,7 @@ export default function Header({ t, lang, setLang, activeTab, setActiveTab, user
                 className="flex items-center gap-2 px-3.5 py-2 border border-slate-200 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-sm font-medium text-slate-600 transition-colors"
                 title={user.username}
               >
-                {lang === 'lo' ? 'ອອກ' : 'Logout'}
+                {lang === 'lo' ? 'ອອກຈາກລະບົບ' : 'Logout'}
               </button>
             )}
           </div>
