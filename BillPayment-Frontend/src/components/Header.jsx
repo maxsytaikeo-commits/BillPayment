@@ -1,7 +1,7 @@
-import { IconLandmark, IconBarChart, IconAlertTriangle, IconCreditCard, IconGlobe } from './icons';
+import { IconBarChart, IconAlertTriangle, IconCreditCard, IconGlobe } from './icons';
 
 export default function Header({ t, lang, setLang, activeTab, setActiveTab, user, onLogout }) {
-  // ປ່ຽນ role ໃຫ້ເປັນຕົວນ້ອຍເພື່ອປ້ອງກັນ Case sensitive
+  // ປ່ຽນ role ໃຫ້ເປັນຕົວນ້ຍເພື່ອປ້ອງກັນ Case sensitive
   const userRole = user?.role?.toLowerCase() || 'customer';
 
   // ກຳນົດສິດ: staff ເຫັນທຸກເມນູ, customer ເຫັນແຕ່ payment
@@ -19,9 +19,11 @@ export default function Header({ t, lang, setLang, activeTab, setActiveTab, user
       <div className="max-w-7xl mx-auto px-6">
         <div className="h-20 flex items-center justify-between gap-6">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-11 w-11 shrink-0 rounded-lg bg-[#1e3a5f] flex items-center justify-center text-white">
-              <IconLandmark size={20} />
-            </div>
+            <img
+              src="/302196511_443485471142126_3273718904034624197_n.png"
+              alt="Bill Payment logo"
+              className="h-11 w-11 shrink-0 rounded-lg object-cover border border-slate-200 bg-white"
+            />
             <div className="min-w-0 leading-tight">
               <p className="font-semibold text-base text-slate-900 truncate tracking-tight">{t?.appName}</p>
               <p className="text-[13px] text-slate-500 truncate">{t?.appSub}</p>

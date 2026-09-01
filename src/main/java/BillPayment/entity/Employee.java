@@ -1,35 +1,31 @@
 package BillPayment.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "tb_employee")
+@Getter
+@Setter
 public class Employee {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    private String name;
+    @Column(name = "id")
+    private long id;
+
+    @Column(name = "name" , length = 20 , nullable = false)
+    private String name; 
+
+    @Column(name = "password" , length = 255 , nullable = false)
     private String password;
+    
+    @Column(name = "position" , length = 20 , nullable = false)
     private String position;
+
+    @Column(name = "status" , length = 20 , nullable = false)
     private String status;
 
-    // Default Constructor
-    public Employee() {}
+    public Employee(){
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-
-    public String getPosition() { return position; }
-    public void setPosition(String position) { this.position = position; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    }
 }

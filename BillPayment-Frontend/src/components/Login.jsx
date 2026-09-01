@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconLandmark, IconAlertTriangle, IconBarChart, IconAlertTriangle as IconMismatch, IconCreditCard } from './icons';
+import { IconAlertTriangle, IconBarChart, IconAlertTriangle as IconMismatch, IconCreditCard } from './icons';
 import { loginUser } from '../api';
 
 export default function Login({ lang, setLang, onLogin }) {
@@ -55,11 +55,13 @@ export default function Login({ lang, setLang, onLogin }) {
 
         <div className="relative">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center">
-              <IconLandmark size={20} />
-            </div>
+            <img
+              src="/302196511_443485471142126_3273718904034624197_n.png"
+              alt="Banking Core System logo"
+              className="h-10 w-10 rounded-lg object-cover border border-white/20 bg-white/10"
+            />
             <div>
-              <p className="font-semibold text-sm tracking-tight">BANKING CORE SYSTEM</p>
+              <p className="font-semibold text-sm tracking-tight">BCEL ONE</p>
               <p className="text-[12px] text-slate-400">Bill Payment & Reconciliation Hub</p>
             </div>
           </div>
@@ -85,7 +87,7 @@ export default function Login({ lang, setLang, onLogin }) {
         </div>
 
         <div className="relative text-[12px] text-slate-500">
-          © 2026 Banking Core System. All rights reserved.
+          © 2026 BCEL ONE. All rights reserved.
         </div>
       </div>
 
@@ -93,11 +95,13 @@ export default function Login({ lang, setLang, onLogin }) {
       <div className="flex-1 flex items-center justify-center bg-slate-50 px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="flex lg:hidden flex-col items-center gap-3 mb-8">
-            <div className="h-11 w-11 rounded-lg bg-[#0f2942] flex items-center justify-center text-white">
-              <IconLandmark size={20} />
-            </div>
+            <img
+              src="/302196511_443485471142126_3273718904034624197_n.png"
+              alt="Banking Core System logo"
+              className="h-11 w-11 rounded-lg object-cover border border-slate-200 bg-white"
+            />
             <div className="text-center">
-              <p className="font-semibold text-base text-slate-900">BANKING CORE SYSTEM</p>
+              <p className="font-semibold text-base text-slate-900">BCEL ONE</p>
               <p className="text-[13px] text-slate-500">Bill Payment & Reconciliation Hub</p>
             </div>
           </div>

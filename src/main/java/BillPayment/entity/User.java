@@ -2,46 +2,42 @@ package BillPayment.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Table(name = "tb_users")
+@Getter
+@Setter
+
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "username" , length = 50 , nullable = false)
     private String username;
+
+    @Column(name = "fullname" , length = 70)
     private String fullname;
 
-    @Column(name = "user_status")
+    @Column(name = "user_status" , length = 10)
     private String userStatus;
 
+    @Column(name = "password" , length = 255 , nullable = false)
     private String password;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at" , nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at" , nullable = false)
     private LocalDateTime updatedAt;
+     
+    @Column(name = "CONSUMER_NO" , length = 20)
+    private String consumerNo;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public User(){
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    }
 
-    public String getFullname() { return fullname; }
-    public void setFullname(String fullname) { this.fullname = fullname; }
-
-    public String getUserStatus() { return userStatus; }
-    public void setUserStatus(String userStatus) { this.userStatus = userStatus; }
-
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
