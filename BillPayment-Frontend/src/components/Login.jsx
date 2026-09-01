@@ -108,7 +108,7 @@ export default function Login({ lang, setLang, onLogin }) {
 
           <div className="mb-8">
             <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">
-              {lang === 'lo' ? 'ຍິນດີຕ້ອນຮັບກັບຄືນ' : 'Welcome back'}
+              {lang === 'lo' ? 'ຍິນດີຕ້ອນຮັບ' : 'Welcome back!'}
             </h2>
             <p className="text-[14px] text-slate-500 mt-1.5">
               {lang === 'lo' ? 'ປ້ອນຂໍ້ມູນເພື່ອເຂົ້າໃຊ້ລະບົບ' : 'Enter your credentials to continue'}
@@ -164,24 +164,6 @@ export default function Login({ lang, setLang, onLogin }) {
                 : (lang === 'lo' ? 'ເຂົ້າສູ່ລະບົບ' : 'Sign in')}
             </button>
           </form>
-
-          <div className="mt-6 p-4 bg-white border border-slate-200 rounded-lg space-y-1.5">
-            <p className="text-[12px] font-medium text-slate-500 uppercase tracking-wide mb-2">
-              {lang === 'lo' ? 'ບັນຊີທົດລອງ (ຈາກ Database)' : 'Test accounts (from Database)'}
-            </p>
-            <div className="flex items-center justify-between text-[12px]">
-              <span className="text-slate-500">admin</span>
-              <span className="font-mono text-slate-700">1234567890</span>
-            </div>
-            <div className="flex items-center justify-between text-[12px]">
-              <span className="text-slate-500">john.doe</span>
-              <span className="font-mono text-slate-700">0987654321</span>
-            </div>
-            <div className="flex items-center justify-between text-[12px]">
-              <span className="text-slate-500">jane.smith</span>
-              <span className="font-mono text-slate-700">2233445566</span>
-            </div>
-          </div>
 
           <button
             onClick={() => setLang(lang === 'lo' ? 'en' : 'lo')}
