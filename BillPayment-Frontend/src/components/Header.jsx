@@ -50,7 +50,7 @@ export default function Header({ t, lang, setLang, activeTab, setActiveTab, user
           <div className="flex items-center gap-2 shrink-0">
             {user && (
               <span className="hidden sm:inline-flex items-center px-2.5 py-1 bg-slate-100 rounded-md text-[11px] font-medium text-slate-500 uppercase tracking-wide">
-                {userRole === 'staff' ? (lang === 'lo' ? 'ພະນັກງານ' : 'Staff') : (lang === 'lo' ? 'ລູກຄ້າ' : 'Customer')}
+                {userRole === 'staff' ? (lang === 'lo' ? 'ພະນັກງານ' : 'Employee') : (lang === 'lo' ? 'ລູກຄ້າ' : 'Customer')}
               </span>
             )}
 
