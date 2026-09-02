@@ -10,4 +10,5 @@ import BillPayment.entity.MismatchLog;
 public interface MismatchLogRepository extends JpaRepository <MismatchLog , Long>{
     List<MismatchLog> findByResolutionStatus(String resolutionStatus);
     Optional<MismatchLog> findByTransactionLog_XrefAndResolutionStatus(String xref , String resolutionStatus);
+    MismatchLog findByTransactionLog_Xref(String xref);
 }

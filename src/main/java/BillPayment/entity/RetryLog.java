@@ -33,9 +33,9 @@ public class RetryLog {
     public Long getRetryId(){
         return retryId;
     }
-    public void setXref(Long retryId){
+    public void setRetryId(Long retryId){
         this.retryId = retryId;
-    }
+    }   
 
     public TransactionLog getTransactionLog(){
         return transactionLog;

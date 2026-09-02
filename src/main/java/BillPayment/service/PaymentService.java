@@ -14,7 +14,7 @@ import BillPayment.repository.TransactionLogRepository;
 
 @Service
 public class PaymentService {
-     @Autowired private TransactionLogRepository txnRepo;
+    @Autowired private TransactionLogRepository txnRepo;
     @Autowired private BillInvoiceRepository invoiceRepo;
     @Autowired private MismatchLogRepository mismatchRepo;
 
@@ -26,19 +26,26 @@ public class PaymentService {
         payTxn.setXref("XR" + System.currentTimeMillis());
         payTxn.setConsumerNo(invoice.getConsumerNo());
         payTxn.setProvider(invoice.getProvider());
+        
+        // 🔴 ແກ້ໄຂ: ດຶງ Service ຜ່ານ Provider ຢ່າງຖືກຕ້ອງ
+        if (invoice.getProvider() != null) {
+            payTxn.setService(invoice.getProvider().getService());
+        }
+        
         payTxn.setAction("PAY");
         payTxn.setBillInvoice(invoice);
         payTxn.setTxnDate(LocalDateTime.now());
 
-
         String bankResult = "SUCCESS";
         String partnerResult = callPartnerPay(invoice); 
 
+        // ກໍລະນີ Bank ແລະ Partner ສະຖານະ ຕົງກັນ
         if (bankResult.equals(partnerResult)) {
             payTxn.setStatus(bankResult);
             return txnRepo.save(payTxn);
         }
 
+        // ກໍລະນີ ເກີດ Mismatch (Bank = SUCCESS, Partner = FAILED)
         payTxn.setStatus("PENDING");
         txnRepo.save(payTxn);
 
@@ -46,7 +53,7 @@ public class PaymentService {
         mismatch.setTransactionLog(payTxn);
         mismatch.setBankStatus(bankResult);
         mismatch.setProviderStatus(partnerResult);
-        mismatch.setMismatchReason("Partner timeout/response ບໍ່ຕົງກັບຝັ່ງ bank");
+        mismatch.setMismatchReason("Partner timeout/response ບໍ່ຕົງກັບຝັ່ງ bank (Simulated via Prefix 9)");
         mismatch.setResolutionStatus("OPEN");
         mismatchRepo.save(mismatch);
 
@@ -54,6 +61,9 @@ public class PaymentService {
     }
 
     private String callPartnerPay(BillInvoice invoice) {
+        if (invoice.getConsumerNo() != null && invoice.getConsumerNo().startsWith("9")) {
+            return "FAILED";
+        }
         return "SUCCESS";
     }
 }

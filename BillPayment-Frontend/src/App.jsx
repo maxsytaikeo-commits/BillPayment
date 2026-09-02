@@ -144,7 +144,7 @@ export default function App() {
   };
 
   const handleRetry = (xref) => {
-    retryTransaction(xref)
+    return retryTransaction(xref)
       .then(() => {
         alert(lang === 'lo' ? `Retry ສຳເລັດສຳລັບ XREF: ${xref}` : `Retry successful for XREF: ${xref}`);
         loadTransactions();
@@ -244,7 +244,12 @@ export default function App() {
               </div>
             )}
             {!loadingMismatch && !mismatchError && (
-              <MismatchLog t={t} mismatches={mismatches} handleRetry={handleRetry} />
+              <MismatchLog 
+                t={t} 
+                mismatches={mismatches} 
+                handleRetry={handleRetry} 
+                fetchMismatchLogs={loadMismatches} 
+              />
             )}
           </>
         )}

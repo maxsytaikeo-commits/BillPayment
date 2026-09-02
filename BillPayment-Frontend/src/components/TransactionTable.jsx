@@ -41,11 +41,12 @@ export default function TransactionTable({ t = {}, filteredTransactions = [], la
                       {txn.status}
                     </span>
                   </td>
-                  <td className="py-4 px-5 text-slate-400 font-mono text-[13px]">{txn.date}</td>
+                  <td className="py-4 px-5 text-slate-400 font-mono text-[13px]">{txn.txnDate}</td>
                 </tr>
               ))
             ) : (
               <tr>
+                
                 <td colSpan="7" className="py-16 text-center">
                   <div className="flex flex-col items-center gap-2 text-slate-400">
                     <IconInbox size={26} />

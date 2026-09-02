@@ -1,7 +1,15 @@
 import { IconAlertTriangle, IconRefresh, IconCheckCircle } from './icons';
 
-export default function MismatchLog({ t, mismatches, handleRetry }) {
-  const pendingCount = mismatches.filter(m => m.resolutionStatus === 'PENDING').length;
+export default function MismatchLog({ t, mismatches, handleRetry, fetchMismatchLogs }) {
+  // ປ່ຽນການເຊັກສະຖານະຈາກ 'PENDING' ເປັນ 'OPEN'
+  const openCount = mismatches.filter(m => m.resolutionStatus === 'OPEN').length;
+
+  const handleRetryClick = async (xref) => {
+    await handleRetry(xref);
+    if (fetchMismatchLogs) {
+      fetchMismatchLogs();
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -10,9 +18,9 @@ export default function MismatchLog({ t, mismatches, handleRetry }) {
           <h2 className="text-base font-semibold text-slate-900">{t.mismatchMgmt}</h2>
           <p className="text-[13px] text-slate-500 mt-1">{t.mismatchSub}</p>
         </div>
-        {pendingCount > 0 && (
+        {openCount > 0 && (
           <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg text-[13px] font-medium self-start sm:self-auto">
-            <IconAlertTriangle size={15} /> {pendingCount} pending
+            <IconAlertTriangle size={15} /> {openCount} pending
           </span>
         )}
       </div>
@@ -35,7 +43,9 @@ export default function MismatchLog({ t, mismatches, handleRetry }) {
               {mismatches.map((item) => (
                 <tr key={item.mismatchId} className="hover:bg-slate-50/70 transition-colors">
                   <td className="py-4 px-5 text-slate-400 font-mono text-[13px]">#{item.mismatchId}</td>
-                  <td className="py-4 px-5 font-mono text-slate-800 font-medium">{item.xref}</td>
+                  <td className="py-4 px-5 font-mono text-slate-800 font-medium">
+                    {item.transactionLog?.xref || item.xref}
+                  </td>
                   <td className="py-4 px-5">
                     <span className="inline-flex items-center gap-1.5 text-emerald-700 text-[13px] font-medium">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{item.bankStatus}
@@ -46,15 +56,20 @@ export default function MismatchLog({ t, mismatches, handleRetry }) {
                       <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />{item.providerStatus}
                     </span>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">{item.reason}</td>
+                  <td className="py-4 px-5 text-slate-600">
+                    {item.mismatchReason || item.reason}
+                  </td>
                   <td className="py-4 px-5">
-                    <span className={`px-2.5 py-1 rounded text-xs font-medium ${item.resolutionStatus === 'PENDING' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                    <span className={`px-2.5 py-1 rounded text-xs font-medium ${item.resolutionStatus === 'OPEN' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
                       {item.resolutionStatus}
                     </span>
                   </td>
                   <td className="py-4 px-5 text-center">
-                    {item.resolutionStatus === 'PENDING' ? (
-                      <button onClick={() => handleRetry(item.xref)} className="inline-flex items-center gap-2 bg-slate-900 hover:bg-[#16304d] text-white font-medium px-3.5 py-2 rounded-lg text-[13px] transition-colors">
+                    {item.resolutionStatus === 'OPEN' ? (
+                      <button 
+                        onClick={() => handleRetryClick(item.transactionLog?.xref || item.xref)} 
+                        className="inline-flex items-center gap-2 bg-slate-900 hover:bg-[#16304d] text-white font-medium px-3.5 py-2 rounded-lg text-[13px] transition-colors cursor-pointer"
+                      >
                         <IconRefresh size={14} /> {t.retryApi.replace(/^\S+\s/, '')}
                       </button>
                     ) : (

@@ -1,11 +1,16 @@
 import { IconActivity, IconCheckCircle, IconAlertTriangle } from './icons';
 
 export default function SummaryCards({ t = {}, transactions = [], mismatches = [] }) {
-  const pendingCount = mismatches.filter(m => m.resolutionStatus === 'PENDING').length;
+  const pendingCount = mismatches.filter(m => m.resolutionStatus === 'OPEN').length;
+
+  // ຄຳນວນ %, Success Rate ແບບ Dynamic (ຖ້າຕ້ອງການ)
+  const totalCount = transactions.length;
+  const successCount = transactions.filter(t => t.status === 'SUCCESS').length;
+  const dynamicSuccessRate = totalCount > 0 ? ((successCount / totalCount) * 100).toFixed(1) + '%' : '100%';
 
   const cards = [
     { label: t?.totalTxn || '', value: transactions.length, sub: t?.realtimeSynced ? t.realtimeSynced.replace('● ', '') : '', icon: IconActivity, tone: 'slate' },
-    { label: t?.successRate || '', value: '98.4%', sub: t?.stableGateway || '', icon: IconCheckCircle, tone: 'emerald' },
+    { label: t?.successRate || '', value: dynamicSuccessRate, sub: t?.stableGateway || '', icon: IconCheckCircle, tone: 'emerald' },
     { label: t?.failedMismatch || '', value: pendingCount, sub: t?.requiresAction || '', icon: IconAlertTriangle, tone: 'rose' },
   ];
 
