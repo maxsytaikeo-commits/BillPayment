@@ -21,9 +21,17 @@ export default function TransactionTable({ t = {}, filteredTransactions = [], la
               filteredTransactions.map((txn, index) => (
                 <tr key={index} className="hover:bg-slate-50/70 transition-colors">
                   <td className="py-4 px-5 font-mono text-slate-800 font-medium">{txn.xref}</td>
-                  <td className="py-4 px-5 text-slate-600">{txn.service}</td>
+                  <td className="py-4 px-5 text-slate-600">
+                    {typeof txn.service === 'object' && txn.service !== null
+                      ? (txn.service.serviceName || txn.service.serviceCode || JSON.stringify(txn.service))
+                      : txn.service}
+                  </td>
                   <td className="py-4 px-5">
-                    <span className="px-2.5 py-1 bg-slate-100 rounded text-slate-700 text-[13px] font-medium">{txn.provider}</span>
+                    <span className="px-2.5 py-1 bg-slate-100 rounded text-slate-700 text-[13px] font-medium">
+                      {typeof txn.provider === 'object' && txn.provider !== null
+                        ? (txn.provider.providerName || txn.provider.providerCode || JSON.stringify(txn.provider))
+                        : txn.provider}
+                    </span>
                   </td>
                   <td className="py-4 px-5 font-mono text-slate-600 text-[13px]">{txn.consumerNo}</td>
                   <td className="py-4 px-5 text-slate-600">{txn.action}</td>

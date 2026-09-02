@@ -19,10 +19,10 @@ public class BillPaymentController {
     @Autowired private PaymentService paymentService;
 
     @GetMapping("/inquiry")
-    public BillInvoice inquiry(@RequestParam String serviceCode,
-                                @RequestParam String providerCode,
+    public BillInvoice inquiry(@RequestParam String service,
+                                @RequestParam String provider,
                                 @RequestParam String consumerNo) {
-        return inquiryService.inquireBill(serviceCode, providerCode, consumerNo);
+        return inquiryService.inquireBill(service, provider, consumerNo);
     }
 
     @PostMapping("/confirm")

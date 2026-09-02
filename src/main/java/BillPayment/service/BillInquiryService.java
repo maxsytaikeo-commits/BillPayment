@@ -27,15 +27,15 @@ public class BillInquiryService {
                 .orElseThrow(() -> new RuntimeException("Provider not found"));
         ServiceMaster service = serviceRepo.findById(serviceCode)
                 .orElseThrow(() -> new RuntimeException("Service not found"));
-
-        BillInvoice invoice = new BillInvoice();
-        invoice.setStatementBillNo(generateStatementBillNo());
-        invoice.setConsumerNo(consumerNo);
-        invoice.setProvider(provider);
-    
-        invoice.setTotalAmount(BigDecimal.ZERO);
-        invoice.setCreatedDate(LocalDateTime.now());
-        invoiceRepo.save(invoice);
+                
+                
+            BillInvoice invoice = invoiceRepo
+            .findByConsumerNoAndProvider(
+                    consumerNo,
+                    provider
+            )
+            .orElseThrow(() ->
+                    new RuntimeException("Bill not found"));
 
         TransactionLog txn = new TransactionLog();
         txn.setXref(generateXref());

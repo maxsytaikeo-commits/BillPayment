@@ -40,7 +40,7 @@ export async function resolveMismatch(mismatchId) {
 
 // ==================== BILL PAYMENT (Pay Simulator) ====================
 export async function inquiryBill({ serviceCode, providerCode, consumerNo }) {
-  const params = new URLSearchParams({ serviceCode, providerCode, consumerNo });
+  const params = new URLSearchParams({service:serviceCode, provider:providerCode, consumerNo });
   return request(`/api/billpayment/inquiry?${params.toString()}`);
 }
 
