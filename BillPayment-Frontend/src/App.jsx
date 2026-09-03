@@ -181,6 +181,7 @@ export default function App() {
         setLang={setLang} 
         onLogin={(userData) => {
           setUser(userData);
+          if (userData?.consumerNo) setConsumerNo(userData.consumerNo);
           // ຕັ້ງຄ່າ activeTab ເລີ່ມຕົ້ນຕາມ Role ຫຼັງຈາກ Login
           const role = userData?.role?.toLowerCase();
           if (role === 'staff') {

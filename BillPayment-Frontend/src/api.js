@@ -75,3 +75,11 @@ export async function loginUser(username, password) {
   }
   return res.json();
 }
+
+export async function signupUser({ username, fullname, consumerNo, password }) {
+  return request('/api/auth/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, fullname, consumerNo, password }),
+  });
+}

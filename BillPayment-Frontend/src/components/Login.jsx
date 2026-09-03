@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { IconAlertTriangle, IconBarChart, IconAlertTriangle as IconMismatch, IconCreditCard } from './icons';
-import { loginUser } from '../api';
+import { loginUser, signupUser } from '../api';
 
 export default function Login({ lang, setLang, onLogin }) {
   const [username, setUsername] = useState('');
+  const [fullname, setFullname] = useState('');
+  const [consumerNo, setConsumerNo] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -12,23 +16,33 @@ export default function Login({ lang, setLang, onLogin }) {
     e.preventDefault();
     setError('');
 
-    if (!username || !password) {
+    if (!username || !password || (isSignUp && (!fullname || !consumerNo || !confirmPassword))) {
       setError(lang === 'lo' ? 'ກະລຸນາປ້ອນຊື່ຜູ້ໃຊ້ ແລະ ລະຫັດຜ່ານ' : 'Please enter username and password');
+      return;
+    }
+    if (isSignUp && password !== confirmPassword) {
+      setError(lang === 'lo' ? 'ລະຫັດຜ່ານບໍ່ກົງກັນ' : 'Passwords do not match');
       return;
     }
 
     setLoading(true);
     try {
-      const user = await loginUser(username, password);
+      const user = isSignUp
+        ? await signupUser({ username, fullname, consumerNo, password })
+        : await loginUser(username, password);
       // ຄາດວ່າ Backend ຕອບ user object ຈາກ tb_users (username, fullname, userStatus, ...)
       onLogin(user);
     } catch (err) {
-      if (err.message.includes('404')) {
+      if (err.status === 409 || err.message.includes('Username already exists')) {
+        setError(lang === 'lo' ? 'ຊື່ຜູ້ໃຊ້ນີ້ມີຢູ່ແລ້ວ' : 'Username already exists');
+      } else if (!isSignUp && err.message.includes('404')) {
         setError(lang === 'lo'
           ? 'ລະບົບ Login ຍັງບໍ່ພ້ອມ (Backend ຍັງບໍ່ມີ endpoint /api/auth/login)'
           : 'Login system not ready yet (Backend missing /api/auth/login)');
       } else {
-        setError(lang === 'lo' ? 'ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ' : 'Invalid username or password');
+        setError(isSignUp
+          ? (lang === 'lo' ? 'ບໍ່ສາມາດສ້າງບັນຊີໄດ້' : 'Unable to create account')
+          : (lang === 'lo' ? 'ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ' : 'Invalid username or password'));
       }
     } finally {
       setLoading(false);
@@ -123,6 +137,18 @@ export default function Login({ lang, setLang, onLogin }) {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignUp && (
+              <>
+                <div>
+                  <label className="block text-[13px] font-medium text-slate-700 mb-1.5">{lang === 'lo' ? 'ຊື່ເຕັມ' : 'Full name'}</label>
+                  <input type="text" value={fullname} onChange={(e) => setFullname(e.target.value)} placeholder={lang === 'lo' ? 'ປ້ອນຊື່ເຕັມ' : 'Enter your full name'} className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#0f2942]/10 focus:border-[#0f2942] transition-all" />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-medium text-slate-700 mb-1.5">{lang === 'lo' ? 'ເບີໂທ ຫຼື ເລກໝາຍລູກຄ້າ' : 'Phone / Consumer number'}</label>
+                  <input type="tel" value={consumerNo} onChange={(e) => setConsumerNo(e.target.value)} placeholder={lang === 'lo' ? 'ປ້ອນເບີໂທ ຫຼື ເລກໝາຍລູກຄ້າ' : 'Enter phone or consumer number'} className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#0f2942]/10 focus:border-[#0f2942] transition-all" />
+                </div>
+              </>
+            )}
             <div>
               <label className="block text-[13px] font-medium text-slate-700 mb-1.5">
                 {lang === 'lo' ? 'ຊື່ຜູ້ໃຊ້' : 'Username'}
@@ -135,6 +161,13 @@ export default function Login({ lang, setLang, onLogin }) {
                 className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#0f2942]/10 focus:border-[#0f2942] transition-all"
               />
             </div>
+
+            {isSignUp && (
+              <div>
+                <label className="block text-[13px] font-medium text-slate-700 mb-1.5">{lang === 'lo' ? 'ຢືນຢັນລະຫັດຜ່ານ' : 'Confirm password'}</label>
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#0f2942]/10 focus:border-[#0f2942] transition-all" />
+              </div>
+            )}
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
@@ -160,10 +193,14 @@ export default function Login({ lang, setLang, onLogin }) {
                 <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
               )}
               {loading
-                ? (lang === 'lo' ? 'ກຳລັງກວດສອບ...' : 'Signing in...')
-                : (lang === 'lo' ? 'ເຂົ້າສູ່ລະບົບ' : 'Sign in')}
+                ? (isSignUp ? (lang === 'lo' ? 'ກຳລັງສ້າງບັນຊີ...' : 'Creating account...') : (lang === 'lo' ? 'ກຳລັງກວດສອບ...' : 'Signing in...'))
+                : (isSignUp ? (lang === 'lo' ? 'ສ້າງບັນຊີ' : 'Sign up') : (lang === 'lo' ? 'ເຂົ້າສູ່ລະບົບ' : 'Sign in'))}
             </button>
           </form>
+
+          <button type="button" onClick={() => { setIsSignUp(!isSignUp); setError(''); }} className="w-full text-center text-[13px] text-[#0f2942] hover:underline mt-5 transition-colors">
+            {isSignUp ? (lang === 'lo' ? 'ມີບັນຊີແລ້ວ? ເຂົ້າສູ່ລະບົບ' : 'Already have an account? Sign in') : (lang === 'lo' ? 'ຍັງບໍ່ມີບັນຊີ? ສ້າງບັນຊີ' : "Don't have an account? Sign up")}
+          </button>
 
           <button
             onClick={() => setLang(lang === 'lo' ? 'en' : 'lo')}
