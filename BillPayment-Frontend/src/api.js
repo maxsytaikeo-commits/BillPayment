@@ -4,7 +4,14 @@ async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, options);
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    throw new Error(errText || `Request failed: ${res.status}`);
+     let message = errText;
+    try {
+      const errorBody = JSON.parse(errText);
+      message = errorBody.message || errorBody.error || message;
+    } catch { }
+    const error = new Error(message || `Request failed: ${res.status}`);
+    error.status = res.status;
+    throw error;
   }
   return res.json();
 }

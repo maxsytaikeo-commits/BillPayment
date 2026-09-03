@@ -121,7 +121,11 @@ export default function App() {
       setBillData(bill);
       setPaymentStep(2);
     } catch (err) {
-      setInquiryError(err.message);
+          const message = err.status === 404 || err.message === 'Bill not found'
+        ? (lang === 'lo' ? 'ບໍ່ພົບເລກໝາຍລູກຄ້ານີ້' : 'Consumer number not found')
+        : (lang === 'lo' ? 'ບໍ່ສາມາດກວດສອບບິນໄດ້' : `Unable to check bill: ${err.message}`);
+      setInquiryError(message);
+      alert(message);
     } finally {
       setInquiryLoading(false);
     }

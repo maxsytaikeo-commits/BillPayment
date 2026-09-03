@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import BillPayment.entity.BillInvoice;
 import BillPayment.entity.ServiceMaster;
@@ -35,7 +37,7 @@ public class BillInquiryService {
                     provider
             )
             .orElseThrow(() ->
-                    new RuntimeException("Bill not found"));
+                    new  ResponseStatusException(HttpStatus.NOT_FOUND, "Bill not found"));
 
         TransactionLog txn = new TransactionLog();
         txn.setXref(generateXref());
