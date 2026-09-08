@@ -25,7 +25,10 @@ public class BillPaymentController {
     @Autowired private PaymentService paymentService;
     @Autowired private RetryService retryService;
 
-    @PostMapping("/api/billpayment/retry/{xref}")
+    // ແກ້ໄຂແລ້ວ: ລຶບ "/api/billpayment" ອອກ ເພາະ @RequestMapping ຂອງ class
+    // ໃສ່ໄວ້ຢູ່ຊັ້ນເທິງແລ້ວ (ຢູ່ level 11) — ຖ້າໃສ່ຊໍ້າອີກຮອບຢູ່ນີ້ ຈະໄດ້
+    // path ຈິງເປັນ /api/billpayment/api/billpayment/retry/{xref} ເຊິ່ງຜິດ
+    @PostMapping("/retry/{xref}")
     public ResponseEntity<?> retryPayment(@PathVariable String xref) {
         try {
             TransactionLog result = retryService.retry(xref);

@@ -70,7 +70,7 @@ export default function Login({ lang, setLang, onLogin }) {
         <div className="relative">
           <div className="flex items-center gap-3">
             <img
-              src="/302196511_443485471142126_3273718904034624197_n.png"
+              src="/BCEL.png"
               alt="Banking Core System logo"
               className="h-10 w-10 rounded-lg object-cover border border-white/20 bg-white/10"
             />
@@ -110,7 +110,7 @@ export default function Login({ lang, setLang, onLogin }) {
         <div className="w-full max-w-sm">
           <div className="flex lg:hidden flex-col items-center gap-3 mb-8">
             <img
-              src="/302196511_443485471142126_3273718904034624197_n.png"
+              src="/BCEL.png"
               alt="Banking Core System logo"
               className="h-11 w-11 rounded-lg object-cover border border-slate-200 bg-white"
             />

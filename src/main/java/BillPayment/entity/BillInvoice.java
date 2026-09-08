@@ -38,6 +38,13 @@ public class BillInvoice {
     @Column(name = "CREATED_DATE")
     private LocalDateTime createdDate;
 
+    // ===== ຄ່າຄິດໄລ່ ບໍ່ persist ລົງ database =====
+    // ຄິດໄລ່ຈາກ TB_TRANSACTION_LOG ວ່າມີ action=PAY, status=SUCCESS ຜູກກັບ statementBillNo ນີ້ແລ້ວບໍ
+    // ຕັ້ງຄ່າຢູ່ BillInquiryService ກ່ອນ return ໃຫ້ Controller ທຸກຄັ້ງ
+    @Transient
+    private boolean paid;
+    // ================================================
+
     public BillInvoice(){
 
     }
@@ -103,5 +110,12 @@ public class BillInvoice {
     }
     public void setCreatedDate(LocalDateTime createdDate){
         this.createdDate = createdDate;
+    }
+
+    public boolean isPaid(){
+        return paid;
+    }
+    public void setPaid(boolean paid){
+        this.paid = paid;
     }
 }

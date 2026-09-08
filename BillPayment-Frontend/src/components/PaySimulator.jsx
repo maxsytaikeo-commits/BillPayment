@@ -32,6 +32,16 @@ export default function PaySimulator({
   const CurrentServiceIcon = serviceIcons[serviceCode] || IconCreditCard;
   const currentProvider = allProviderCodes.find(p => p.code === providerCode);
 
+  // ບິນນີ້ຈ່າຍໄປແລ້ວບໍ (ຄ່າມາຈາກ Backend: /api/billpayment/inquiry ຕອບກັບ field "paid")
+  const isAlreadyPaid = billData?.paid === true;
+
+  // ==== ຂໍ້ມູນໃບຮັບເງິນ ====
+  // receiptInfo = { ...billData, ...txn } ຈາກ App.jsx
+  // billData.provider ເປັນ object { providerCode, providerName, ... } ບໍ່ແມ່ນ string ໂດຍກົງ
+  // txn (TransactionLog) ໃຊ້ field "txnDate" ບໍ່ແມ່ນ "payDate"
+  const receiptProviderCode = receiptInfo?.provider?.providerCode || receiptInfo?.providerCode;
+  const receiptTime = receiptInfo?.txnDate || receiptInfo?.payDate;
+
   return (
     <div className="space-y-6">
       <div>
@@ -142,8 +152,15 @@ export default function PaySimulator({
 
           {paymentStep === 2 && billData && (
             <div className="space-y-6">
+              {isAlreadyPaid && (
+                <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[13px] rounded-lg px-3.5 py-2.5">
+                  <IconCheckCircle size={15} />
+                  {lang === 'lo' ? 'ໃບບິນນີ້ຖືກຈ່າຍໄປແລ້ວ' : 'This bill has already been paid'}
+                </div>
+              )}
+
               <div className="bg-slate-50 border border-slate-200 rounded-lg p-5 space-y-3 text-sm">
-                <div className="flex justify-between border-b border-slate-200 pb-3">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-slate-500 text-[13px]">{t.customerName}</span>
                   <span className="font-medium text-slate-900">{billData.customerName}</span>
                 </div>
@@ -158,6 +175,15 @@ export default function PaySimulator({
                 <div className="flex justify-between border-b border-slate-200 pb-3">
                   <span className="text-slate-500 text-[13px]">{t.feeAmount}</span>
                   <span className="text-slate-700">{billData.feeAmount?.toLocaleString()} LAK</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-200 pb-3">
+                  <span className="text-slate-500 text-[13px]">{lang === 'lo' ? 'ສະຖານະ' : 'Status'}</span>
+                  <span className={`inline-flex items-center gap-1.5 text-[13px] font-medium ${isAlreadyPaid ? 'text-emerald-700' : 'text-amber-700'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isAlreadyPaid ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                    {isAlreadyPaid
+                      ? (lang === 'lo' ? 'ຈ່າຍແລ້ວ' : 'Paid')
+                      : (lang === 'lo' ? 'ຍັງບໍ່ຈ່າຍ' : 'Unpaid')}
+                  </span>
                 </div>
                 <div className="flex justify-between pt-1">
                   <span className="font-semibold text-slate-900">{t.totalAmount}</span>
@@ -182,13 +208,16 @@ export default function PaySimulator({
                 </button>
                 <button
                   onClick={handleConfirmPayment}
-                  disabled={confirmLoading}
-                  className="w-2/3 flex items-center justify-center gap-2 bg-[#0f2942] hover:bg-[#16304d] disabled:opacity-60 text-white font-medium py-3 rounded-lg text-sm transition-colors"
+                  disabled={confirmLoading || isAlreadyPaid}
+                  title={isAlreadyPaid ? (lang === 'lo' ? 'ບໍ່ສາມາດຈ່າຍຊໍ້າໃບບິນທີ່ຈ່າຍໄປແລ້ວ' : 'Cannot pay a bill that is already paid') : undefined}
+                  className="w-2/3 flex items-center justify-center gap-2 bg-[#0f2942] hover:bg-[#16304d] disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium py-3 rounded-lg text-sm transition-colors"
                 >
                   {confirmLoading && (
                     <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                   )}
-                  {confirmLoading
+                  {isAlreadyPaid
+                    ? (lang === 'lo' ? 'ຈ່າຍແລ້ວ' : 'Already Paid')
+                    : confirmLoading
                     ? (lang === 'lo' ? 'ກຳລັງດຳເນີນການ...' : 'Processing...')
                     : t.confirmPayBtn.replace(/^\S+\s/, '')}
                 </button>
@@ -209,9 +238,9 @@ export default function PaySimulator({
                 <p className="text-slate-500 pb-3 border-b border-slate-200 text-center font-sans font-semibold text-[13px] uppercase tracking-wide">{t.officialReceipt}</p>
                 <p><span className="text-slate-500">XREF</span> · {receiptInfo.xref}</p>
                 <p><span className="text-slate-500">Customer</span> · {receiptInfo.customerName}</p>
-                <p><span className="text-slate-500">Provider</span> · {providerName(receiptInfo.providerCode)}</p>
+                <p><span className="text-slate-500">Provider</span> · {providerName(receiptProviderCode)}</p>
                 <p><span className="text-slate-500">Total</span> · {receiptInfo.totalAmount?.toLocaleString()} LAK</p>
-                <p><span className="text-slate-500">Time</span> · {receiptInfo.payDate}</p>
+                <p><span className="text-slate-500">Time</span> · {receiptTime}</p>
               </div>
 
               <button onClick={() => { setPaymentStep(1); setReceiptInfo(null); }} className="w-full flex items-center justify-center gap-2 bg-[#0f2942] hover:bg-[#16304d] text-white font-medium py-3 rounded-lg text-sm transition-colors">

@@ -6,12 +6,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import BillPayment.entity.User;
 import BillPayment.entity.Employee;
+import BillPayment.entity.Provider;
+import BillPayment.entity.BillInvoice;
 import BillPayment.repository.UserRepository;
 import BillPayment.repository.EmployeeRepository;
+import BillPayment.repository.ProviderRepository;
+import BillPayment.repository.BillInvoiceRepository;
 import BillPayment.dto.LoginRequest;
 import BillPayment.dto.SignupRequest;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,11 +26,13 @@ public class AuthController {
 
     @Autowired private UserRepository userRepository;
     @Autowired private EmployeeRepository employeeRepository;
+    @Autowired private ProviderRepository providerRepository;
+    @Autowired private BillInvoiceRepository billInvoiceRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
-        
+
         // 1. ກວດສອບຈາກ tb_users (Customer / Admin)
         User user = userRepository.findByUsername(req.getUsername());
         if (user != null && passwordMatches(req.getPassword(), user.getPassword())) {
@@ -84,6 +92,23 @@ public class AuthController {
         user.setCreatedAt(now);
         user.setUpdatedAt(now);
         User saved = userRepository.save(user);
+
+        // ===== ສ້າງ BillInvoice ໃຫ້ທຸກ provider ອັດຕະໂນມັດ =====
+        // ເພື່ອໃຫ້ user ໃໝ່ inquiry / pay ໄດ້ທັນທີ ໂດຍບໍ່ຕ້ອງ insert ດ້ວຍມື
+        List<Provider> allProviders = providerRepository.findAll();
+        for (Provider provider : allProviders) {
+            BillInvoice invoice = new BillInvoice();
+            invoice.setConsumerNo(saved.getConsumerNo());
+            invoice.setStatementBillNo("INV-" + provider.getProviderCode() + "-" + System.currentTimeMillis());
+            invoice.setProvider(provider);
+            invoice.setCustomerName(saved.getFullname() != null ? saved.getFullname() : saved.getUsername());
+            invoice.setBillAmount(new BigDecimal("100000"));
+            invoice.setFeeAmount(new BigDecimal("2000"));
+            invoice.setTotalAmount(new BigDecimal("102000"));
+            invoice.setCreatedDate(now);
+            billInvoiceRepository.save(invoice);
+        }
+        // ==========================================================
 
         Map<String, Object> response = new HashMap<>();
         response.put("id", saved.getId());

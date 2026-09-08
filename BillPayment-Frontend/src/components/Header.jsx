@@ -20,7 +20,7 @@ export default function Header({ t, lang, setLang, activeTab, setActiveTab, user
         <div className="h-20 flex items-center justify-between gap-6">
           <div className="flex items-center gap-3 min-w-0">
             <img
-              src="/302196511_443485471142126_3273718904034624197_n.png"
+              src="/BCEL.png"
               alt="Bill Payment logo"
               className="h-11 w-11 shrink-0 rounded-lg object-cover border border-slate-200 bg-white"
             />

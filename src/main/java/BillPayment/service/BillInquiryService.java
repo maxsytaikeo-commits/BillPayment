@@ -1,6 +1,7 @@
 package BillPayment.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,6 +60,11 @@ public class BillInquiryService {
         txn.setBillInvoice(invoice);
         txnRepo.save(txn);
 
+        List<TransactionLog> logs = txnRepo.findByBillInvoice_StatementBillNo(invoice.getStatementBillNo());
+        boolean alreadyPaid = logs.stream()
+                .anyMatch(t -> "PAY".equals(t.getAction()) && "SUCCESS".equals(t.getStatus()));
+        invoice.setPaid(alreadyPaid);
+
         return invoice;
     }
 
@@ -66,4 +72,8 @@ public class BillInquiryService {
         return "XR" + System.currentTimeMillis();
     }
 
+    private String generateStatementBillNo() {
+        return "ST" + System.currentTimeMillis();
+    }
 }
+
