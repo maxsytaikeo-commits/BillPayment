@@ -1,6 +1,5 @@
 package BillPayment.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,25 +24,34 @@ public class BillInquiryService {
     @Autowired private ServiceMasterRepository serviceRepo;
 
     public BillInvoice inquireBill(String serviceCode, String providerCode, String consumerNo) {
-        Provider provider = providerRepo.findById(providerCode)
+        String normalizedConsumerNo = consumerNo == null ? "" : consumerNo.trim();
+        String normalizedProviderCode = providerCode == null ? "" : providerCode.trim();
+        String normalizedServiceCode = serviceCode == null ? "" : serviceCode.trim();
+
+        Provider provider = providerRepo.findById(normalizedProviderCode)
                 .orElseThrow(() -> new RuntimeException("Provider not found"));
-        ServiceMaster service = serviceRepo.findById(serviceCode)
+        ServiceMaster service = serviceRepo.findById(normalizedServiceCode)
                 .orElseThrow(() -> new RuntimeException("Service not found"));
-                
-                
-            BillInvoice invoice = invoiceRepo
+
+        BillInvoice invoice = invoiceRepo
             .findByConsumerNoAndProvider(
-                    consumerNo,
+                normalizedConsumerNo,
                     provider
             )
-            .orElseThrow(() ->
-                    new  ResponseStatusException(HttpStatus.NOT_FOUND, "Bill not found"));
+            .orElseThrow(() -> {
+            if (invoiceRepo.existsByConsumerNo(normalizedConsumerNo)) {
+                return new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Bill exists, but it belongs to a different provider");
+            }
+            return new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "No bill found for this consumer number");
+            });
 
         TransactionLog txn = new TransactionLog();
         txn.setXref(generateXref());
         txn.setService(service);
         txn.setProvider(provider);
-        txn.setConsumerNo(consumerNo);
+        txn.setConsumerNo(normalizedConsumerNo);
         txn.setAction("INQ");
         txn.setTxnDate(LocalDateTime.now());
 
@@ -58,7 +66,4 @@ public class BillInquiryService {
         return "XR" + System.currentTimeMillis();
     }
 
-    private String generateStatementBillNo() {
-        return "ST" + System.currentTimeMillis();
-    }
 }

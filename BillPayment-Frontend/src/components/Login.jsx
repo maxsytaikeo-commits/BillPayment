@@ -122,10 +122,14 @@ export default function Login({ lang, setLang, onLogin }) {
 
           <div className="mb-8">
             <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">
-              {lang === 'lo' ? 'ຍິນດີຕ້ອນຮັບ' : 'Welcome back!'}
+              {isSignUp
+                ? (lang === 'lo' ? 'ສ້າງບັນຊີ' : 'Create your account')
+                : (lang === 'lo' ? 'ຍິນດີຕ້ອນຮັບ' : 'Welcome back!')}
             </h2>
             <p className="text-[14px] text-slate-500 mt-1.5">
-              {lang === 'lo' ? 'ປ້ອນຂໍ້ມູນເພື່ອເຂົ້າໃຊ້ລະບົບ' : 'Enter your credentials to continue'}
+              {isSignUp
+                ? (lang === 'lo' ? 'ລົງທະບຽນໃຊ້ງານລະບົບ' : 'Register to use the system')
+                : (lang === 'lo' ? 'ປ້ອນຂໍ້ມູນເພື່ອເຂົ້າໃຊ້ລະບົບ' : 'Enter your credentials to continue')}
             </p>
           </div>
 
@@ -162,13 +166,6 @@ export default function Login({ lang, setLang, onLogin }) {
               />
             </div>
 
-            {isSignUp && (
-              <div>
-                <label className="block text-[13px] font-medium text-slate-700 mb-1.5">{lang === 'lo' ? 'ຢືນຢັນລະຫັດຜ່ານ' : 'Confirm password'}</label>
-                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#0f2942]/10 focus:border-[#0f2942] transition-all" />
-              </div>
-            )}
-
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-[13px] font-medium text-slate-700">
@@ -183,6 +180,13 @@ export default function Login({ lang, setLang, onLogin }) {
                 className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#0f2942]/10 focus:border-[#0f2942] transition-all"
               />
             </div>
+
+            {isSignUp && (
+              <div>
+                <label className="block text-[13px] font-medium text-slate-700 mb-1.5">{lang === 'lo' ? 'ຢືນຢັນລະຫັດຜ່ານ' : 'Confirm password'}</label>
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#0f2942]/10 focus:border-[#0f2942] transition-all" />
+              </div>
+            )}
 
             <button
               type="submit"

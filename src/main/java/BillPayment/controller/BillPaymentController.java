@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
+import java.util.Map;
 
 import BillPayment.entity.BillInvoice;
 import BillPayment.entity.TransactionLog;
@@ -42,5 +45,11 @@ public class BillPaymentController {
     @PostMapping("/confirm")
     public TransactionLog confirm(@RequestParam String statementBillNo) {
         return paymentService.confirmPayment(statementBillNo);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleBillPaymentError(ResponseStatusException exception) {
+        return ResponseEntity.status(exception.getStatusCode())
+                .body(Map.of("message", exception.getReason()));
     }
 }
