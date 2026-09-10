@@ -19,7 +19,7 @@ export default function MismatchLog({ t, mismatches, handleRetry, fetchMismatchL
           <p className="text-[13px] text-slate-500 mt-1">{t.mismatchSub}</p>
         </div>
         {openCount > 0 && (
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg text-[13px] font-medium self-start sm:self-auto">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-[13px] font-medium self-start sm:self-auto">
             <IconAlertTriangle size={15} /> {openCount} pending
           </span>
         )}
@@ -47,20 +47,20 @@ export default function MismatchLog({ t, mismatches, handleRetry, fetchMismatchL
                     {item.transactionLog?.xref || item.xref}
                   </td>
                   <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1.5 text-emerald-700 text-[13px] font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{item.bankStatus}
+                    <span className={`inline-flex items-center gap-1.5 text-[13px] font-medium ${item.bankStatus === 'SUCCESS' ? 'text-emerald-700' : 'text-rose-700'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${item.bankStatus === 'SUCCESS' ? 'bg-emerald-500' : 'bg-rose-500'}`} />{item.bankStatus}
                     </span>
                   </td>
                   <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1.5 text-rose-700 text-[13px] font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />{item.providerStatus}
+                    <span className={`inline-flex items-center gap-1.5 text-[13px] font-medium ${item.providerStatus === 'SUCCESS' ? 'text-emerald-700' : 'text-rose-700'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${item.providerStatus === 'SUCCESS' ? 'bg-emerald-500' : 'bg-rose-500'}`} />{item.providerStatus}
                     </span>
                   </td>
                   <td className="py-4 px-5 text-slate-600">
                     {item.mismatchReason || item.reason}
                   </td>
                   <td className="py-4 px-5">
-                    <span className={`px-2.5 py-1 rounded text-xs font-medium ${item.resolutionStatus === 'OPEN' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                    <span className={`px-2.5 py-1 rounded text-xs font-medium ${item.resolutionStatus === 'OPEN' ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}`}>
                       {item.resolutionStatus}
                     </span>
                   </td>

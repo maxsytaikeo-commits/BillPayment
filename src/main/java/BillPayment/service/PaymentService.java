@@ -117,8 +117,7 @@ public class PaymentService {
         // ໃນລະຫວ່າງທີ່ mismatch ນີ້ຍັງບໍ່ resolve)
         if ("SUCCESS".equals(partnerResult) && !"SUCCESS".equals(bankResult)) {
             mismatch.setMismatchReason(
-                    "[HIGH PRIORITY] ລູກຄ້າຈ່າຍສຳເລັດຝັ່ງ provider ແລ້ວ ແຕ່ bank ບັນທຶກວ່າ " + bankResult +
-                    " - ຕ້ອງ verify/resolve ດ່ວນ ເພື່ອປ້ອງກັນລູກຄ້າຖືກເອີ້ນເກັບເງິນຊ້ຳ ຫຼື ຈ່າຍຊ້ຳໂດຍເຂົ້າໃຈຜິດ");
+                    bankResult);
         } else {
             mismatch.setMismatchReason(
                     "Bank status (" + bankResult + ") ບໍ່ຕົງກັບ Partner status (" + partnerResult + ")");
