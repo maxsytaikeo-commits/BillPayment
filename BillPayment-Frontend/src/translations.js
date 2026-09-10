@@ -10,6 +10,7 @@ export const translations = {
     appSub: "Bill Payment & Reconciliation Hub",
     tabMonitoring: " Monitoring",
     tabMismatch: " Mismatch Log",
+    tabReports: " Reports",
     tabPayment: " Pay Simulator",
     totalTxn: "ທຸລະກຳທັງໝົດ (Total Txn)",
     realtimeSynced: " ຊິ້ງຂໍ້ມູນແບບ Real-time",
@@ -63,7 +64,17 @@ export const translations = {
     confirmPayBtn: " ຢືນຢັນການຈ່າຍເງິນ",
     successPayMsg: " ຊຳລະເງິນສຳເລັດຮຽບຮ້ອຍແລ້ວ!",
     officialReceipt: "OFFICIAL RECEIPT",
-    newTxnBtn: " ເຮັດລາຍການໃໝ່"
+    newTxnBtn: " ເຮັດລາຍການໃໝ່",
+    reportsTitle: "ລາຍງານທຸລະກຳ (Transaction Reports)",
+    reportsSub: "ສ້າງ ແລະ ດາວໂຫລດລາຍງານທຸລະກຳຕາມໄລຍະວັນທີ່",
+    dateRange: "ໄລຍະວັນທີ່",
+    generateReport: "ສ້າງລາຍງານ",
+    loading: "ກຳລັງໂຫລດ...",
+    clearFilter: "ລ້າງຕົວກອງ",
+    noData: "ບໍ່ພົບທຸລະກຳສຳລັບໄລຍະວັນທີ່ທີ່ເລືອກ",
+    selectDateRange: "ເລືອກໄລຍະວັນທີ່ເພື່ອສ້າງລາຍງານ",
+    totalRecords: "ບັນທຶກທັງໝົດ",
+    colRespCode: "ລະຫັດຕອບ"
   },
   en: {
      providerNames: {
@@ -76,6 +87,7 @@ export const translations = {
     appSub: "Bill Payment & Reconciliation Hub",
     tabMonitoring: " Monitoring",
     tabMismatch: " Mismatch Log",
+    tabReports: " Reports",
     tabPayment: " Pay Simulator",
     totalTxn: "Total Transactions",
     realtimeSynced: "● Real-time synced",
@@ -129,6 +141,16 @@ export const translations = {
     confirmPayBtn: " Confirm Payment",
     successPayMsg: " Payment Successful!",
     officialReceipt: "OFFICIAL RECEIPT",
-    newTxnBtn: " New Transaction"
+    newTxnBtn: " New Transaction",
+    reportsTitle: "Transaction Reports",
+    reportsSub: "Generate and export transaction reports by date range",
+    dateRange: "Date Range",
+    generateReport: "Generate Report",
+    loading: "Loading...",
+    clearFilter: "Clear",
+    noData: "No transactions found for the selected date range",
+    selectDateRange: "Select a date range to generate report",
+    totalRecords: "Total Records",
+    colRespCode: "Response Code"
   }
 };

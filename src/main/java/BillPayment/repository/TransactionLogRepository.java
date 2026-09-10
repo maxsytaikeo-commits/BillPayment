@@ -18,5 +18,11 @@ public interface TransactionLogRepository extends JpaRepository<TransactionLog ,
     List<TransactionLog> findByConsumerNoContaining(String consumerNo);
     List<TransactionLog> findByBillInvoice_StatementBillNo(String statementBillNo);
     List<TransactionLog> findByActionAndStatus(String action , String status);
-    List<TransactionLog> findByTxnDateBetween(LocalDateTime from , LocalDateTime to); 
+    List<TransactionLog> findByTxnDateBetween(LocalDateTime from , LocalDateTime to);
+
+    // ໃຊ້ໂດຍ TimeoutMonitorService: ຫາລາຍການທີ່ຄ້າງຢູ່ status ດັ່ງກ່າວ ແລະ ເກົ່າກວ່າ threshold
+    List<TransactionLog> findByActionAndStatusAndTxnDateBefore(String action, String status, LocalDateTime cutoff);
+
+    // ໃຊ້ໂດຍ PaymentService: ຫາປະຫວັດການພະຍາຍາມຈ່າຍ (PAY) ທັງໝົດຂອງບິນດຽວກັນ ເພື່ອກວດ duplicate payment
+    List<TransactionLog> findByBillInvoice_StatementBillNoAndAction(String statementBillNo, String action);
 }

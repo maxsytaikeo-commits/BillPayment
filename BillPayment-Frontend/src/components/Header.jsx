@@ -1,4 +1,4 @@
-import { IconBarChart, IconAlertTriangle, IconCreditCard, IconGlobe } from './icons';
+import { IconBarChart, IconAlertTriangle, IconCreditCard, IconGlobe, IconFileText } from './icons';
 
 export default function Header({ t, lang, setLang, activeTab, setActiveTab, user, onLogout }) {
   // ປ່ຽນ role ໃຫ້ເປັນຕົວນ້ຍເພື່ອປ້ອງກັນ Case sensitive
@@ -8,6 +8,7 @@ export default function Header({ t, lang, setLang, activeTab, setActiveTab, user
   const allNavItems = [
     { key: 'monitoring', label: t?.tabMonitoring ? t.tabMonitoring.replace(/^\S+\s/, '') : '', icon: IconBarChart, roles: ['staff'] },
     { key: 'mismatch', label: t?.tabMismatch ? t.tabMismatch.replace(/^\S+\s/, '') : '', icon: IconAlertTriangle, roles: ['staff'] },
+    { key: 'reports', label: t?.tabReports ? t.tabReports.replace(/^\S+\s/, '') : 'Reports', icon: IconFileText, roles: ['staff'] },
     { key: 'payment', label: t?.tabPayment ? t.tabPayment.replace(/^\S+\s/, '') : '', icon: IconCreditCard, roles: ['customer', 'staff'] },
   ];
 

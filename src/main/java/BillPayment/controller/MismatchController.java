@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
+import BillPayment.dto.MismatchDashboardDTO;
 import BillPayment.entity.MismatchLog;
 import BillPayment.service.MismatchService;
 
@@ -16,9 +17,13 @@ import BillPayment.service.MismatchService;
 public class MismatchController {
         @Autowired private MismatchService mismatchService;
 
+    // ຕົວຢ່າງ: GET /api/mismatch?providerStatus=TIMEOUT
+    //         GET /api/mismatch?resolutionStatus=OPEN&providerStatus=TIMEOUT
     @GetMapping
-    public List<MismatchLog> dashboard(@RequestParam(required = false) String resolutionStatus) {
-        return mismatchService.dashboard(resolutionStatus);
+    public List<MismatchDashboardDTO> dashboard(
+            @RequestParam(required = false) String resolutionStatus,
+            @RequestParam(required = false) String providerStatus) {
+        return mismatchService.dashboard(resolutionStatus, providerStatus);
     }
 
     @PostMapping("/{mismatchId}/resolve")
@@ -27,3 +32,4 @@ public class MismatchController {
     }
 
 }
+

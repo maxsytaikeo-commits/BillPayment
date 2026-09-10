@@ -19,7 +19,7 @@ public class ServiceMaster {
     public ServiceMaster(){
     }
     
-    public String getServiceCOde(){
+    public String getServiceCode(){
         return serviceCode;
     }
     public void setServiceCode(String serviceCode){

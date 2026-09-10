@@ -7,7 +7,8 @@ import TransactionFilter from './components/TransactionFilter';
 import TransactionTable from './components/TransactionTable';
 import MismatchLog from './components/MismatchLog';
 import PaySimulator from './components/PaySimulator';
-import { getTransactions, getMismatches, retryTransaction, inquiryBill, confirmPayment } from './api';
+import Reports from './components/Reports';
+import { getTransactions, getMismatches, retryTransaction, inquiryBill, confirmPayment, getReport } from './api';
 
 export default function App() {
   const [lang, setLang] = useState('lo');
@@ -65,23 +66,87 @@ export default function App() {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [confirmError, setConfirmError] = useState(null);
 
-  const handleQuickFilter = (type) => {
+  // ==================== Reports ====================
+  const [reportData, setReportData] = useState([]);
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [reportError, setReportError] = useState(null);
+  const [reportStartDate, setReportStartDate] = useState('');
+  const [reportEndDate, setReportEndDate] = useState('');
+
+  const handleGenerateReport = async () => {
+    if (!reportStartDate || !reportEndDate) {
+      setReportError(lang === 'lo' ? 'ກະລຸນາເລືອກວັນທີ່ຕົ້ນຕໍ່ ແລະ ສິ້ນສຸດ' : 'Please select start and end dates');
+      return;
+    }
+
+    setLoadingReport(true);
+    setReportError(null);
+    try {
+      const fromISO = `${reportStartDate}T00:00:00`;
+      const toISO = `${reportEndDate}T23:59:59`;
+      const data = await getReport(fromISO, toISO);
+      setReportData(data);
+    } catch (err) {
+      const errorMsg = err.status === 400 
+        ? (lang === 'lo' ? 'ວັນທີ່ບໍ່ຖືກຕ້ອງ. ກະລຸນາໃຊ້ຮູບແບບ YYYY-MM-DD' : 'Invalid date format. Please use YYYY-MM-DD')
+        : err.message;
+      setReportError(errorMsg);
+      console.error('Report generation error:', err);
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  const handleExportReportExcel = () => {
+    if (reportData.length === 0) {
+      alert(lang === 'lo' ? 'ບໍ່ມີຂໍ້ມູນສຳລັບ Export' : 'No data available to export');
+      return;
+    }
+    const headers = ['XREF', 'Service', 'Provider', 'Consumer No', 'Action', 'Status', 'Response Code', 'Date'];
+    const rows = reportData.map(tx => [
+      tx.xref,
+      typeof tx.service === 'object' ? (tx.service.serviceName || tx.service.serviceCode) : tx.service,
+      typeof tx.provider === 'object' ? (tx.provider.providerName || tx.provider.providerCode) : tx.provider,
+      tx.consumerNo,
+      tx.action,
+      tx.status,
+      tx.respCode || '-',
+      tx.txnDate
+    ]);
+
+    let csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `transaction_report_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportReportPdf = () => {
+    window.print();
+  };
+
+  const handleQuickFilter = (type, isReport = false) => {
     const today = new Date();
     const formatDate = (d) => d.toISOString().split('T')[0];
+    const setters = isReport ? [setReportStartDate, setReportEndDate] : [setStartDate, setEndDate];
+    const [setStart, setEnd] = setters;
 
     if (type === 'today') {
       const formatted = formatDate(today);
-      setStartDate(formatted);
-      setEndDate(formatted);
+      setStart(formatted);
+      setEnd(formatted);
     } else if (type === 'last7') {
       const past = new Date();
       past.setDate(today.getDate() - 7);
-      setStartDate(formatDate(past));
-      setEndDate(formatDate(today));
+      setStart(formatDate(past));
+      setEnd(formatDate(today));
     } else if (type === 'month') {
       const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-      setStartDate(formatDate(firstDay));
-      setEndDate(formatDate(today));
+      setStart(formatDate(firstDay));
+      setEnd(formatDate(today));
     }
   };
 
@@ -259,6 +324,24 @@ export default function App() {
               />
             )}
           </>
+        )}
+
+        {/* ໜ້າ Reports: ເປີດໃຫ້ສະເພາະ staff ເບິ່ງໄດ້ */}
+        {activeTab === 'reports' && userRole === 'staff' && (
+          <Reports
+            t={t}
+            startDate={reportStartDate}
+            setStartDate={setReportStartDate}
+            endDate={reportEndDate}
+            setEndDate={setReportEndDate}
+            handleQuickFilter={(type) => handleQuickFilter(type, true)}
+            reportData={reportData}
+            loadingReport={loadingReport}
+            reportError={reportError}
+            handleGenerateReport={handleGenerateReport}
+            handleExportReportExcel={handleExportReportExcel}
+            handleExportReportPdf={handleExportReportPdf}
+          />
         )}
 
         {/* ໜ້າ Pay Simulator: ເປີດໃຫ້ທັງ customer ແລະ staff ເຂົ້າໄດ້ */}
