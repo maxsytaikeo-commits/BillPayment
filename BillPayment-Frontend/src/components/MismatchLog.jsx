@@ -1,8 +1,29 @@
+import { useState, useMemo } from 'react';
 import { IconAlertTriangle, IconRefresh, IconCheckCircle } from './icons';
 
 export default function MismatchLog({ t, mismatches, handleRetry, fetchMismatchLogs }) {
   // ປ່ຽນການເຊັກສະຖານະຈາກ 'PENDING' ເປັນ 'OPEN'
   const openCount = mismatches.filter(m => m.resolutionStatus === 'OPEN').length;
+
+  // ===== filter ຕາມ providerStatus (ເຊັ່ນ TIMEOUT) =====
+  // filter ຝັ່ງ frontend ຈາກ list ທີ່ໂຫລດມາແລ້ວ (backend ກໍຮອງຮັບ GET /api/mismatch?providerStatus=
+  // ຢູ່ແລ້ວ ຖ້າຕໍ່ໄປຢາກປ່ຽນເປັນ server-side filter ສຳລັບ dataset ໃຫຍ່)
+  const [providerStatusFilter, setProviderStatusFilter] = useState('ALL');
+
+  const providerStatusOptions = useMemo(() => {
+    const distinct = Array.from(new Set(mismatches.map(m => m.providerStatus).filter(Boolean)));
+    return ['ALL', ...distinct];
+  }, [mismatches]);
+
+  const filteredMismatches = providerStatusFilter === 'ALL'
+    ? mismatches
+    : mismatches.filter(m => m.providerStatus === providerStatusFilter);
+
+  const statusStyle = (status) => {
+    if (status === 'SUCCESS') return { text: 'text-emerald-700', dot: 'bg-emerald-500' };
+    if (status === 'TIMEOUT') return { text: 'text-amber-700', dot: 'bg-amber-500' };
+    return { text: 'text-rose-700', dot: 'bg-rose-500' };
+  };
 
   const handleRetryClick = async (xref) => {
     await handleRetry(xref);
@@ -18,11 +39,24 @@ export default function MismatchLog({ t, mismatches, handleRetry, fetchMismatchL
           <h2 className="text-base font-semibold text-slate-900">{t.mismatchMgmt}</h2>
           <p className="text-[13px] text-slate-500 mt-1">{t.mismatchSub}</p>
         </div>
-        {openCount > 0 && (
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-[13px] font-medium self-start sm:self-auto">
-            <IconAlertTriangle size={15} /> {openCount} pending
-          </span>
-        )}
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <select
+            value={providerStatusFilter}
+            onChange={(e) => setProviderStatusFilter(e.target.value)}
+            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[13px] text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300"
+          >
+            {providerStatusOptions.map(opt => (
+              <option key={opt} value={opt}>
+                {opt === 'ALL' ? 'All provider status' : opt}
+              </option>
+            ))}
+          </select>
+          {openCount > 0 && (
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-[13px] font-medium">
+              <IconAlertTriangle size={15} /> {openCount} pending
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
@@ -40,20 +74,23 @@ export default function MismatchLog({ t, mismatches, handleRetry, fetchMismatchL
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
-              {mismatches.map((item) => (
+              {filteredMismatches.map((item) => {
+                const bankStyle = statusStyle(item.bankStatus);
+                const providerStyle = statusStyle(item.providerStatus);
+                return (
                 <tr key={item.mismatchId} className="hover:bg-slate-50/70 transition-colors">
                   <td className="py-4 px-5 text-slate-400 font-mono text-[13px]">#{item.mismatchId}</td>
                   <td className="py-4 px-5 font-mono text-slate-800 font-medium">
                     {item.transactionLog?.xref || item.xref}
                   </td>
                   <td className="py-4 px-5">
-                    <span className={`inline-flex items-center gap-1.5 text-[13px] font-medium ${item.bankStatus === 'SUCCESS' ? 'text-emerald-700' : 'text-rose-700'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${item.bankStatus === 'SUCCESS' ? 'bg-emerald-500' : 'bg-rose-500'}`} />{item.bankStatus}
+                    <span className={`inline-flex items-center gap-1.5 text-[13px] font-medium ${bankStyle.text}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${bankStyle.dot}`} />{item.bankStatus}
                     </span>
                   </td>
                   <td className="py-4 px-5">
-                    <span className={`inline-flex items-center gap-1.5 text-[13px] font-medium ${item.providerStatus === 'SUCCESS' ? 'text-emerald-700' : 'text-rose-700'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${item.providerStatus === 'SUCCESS' ? 'bg-emerald-500' : 'bg-rose-500'}`} />{item.providerStatus}
+                    <span className={`inline-flex items-center gap-1.5 text-[13px] font-medium ${providerStyle.text}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${providerStyle.dot}`} />{item.providerStatus}
                     </span>
                   </td>
                   <td className="py-4 px-5 text-slate-600">
@@ -79,7 +116,15 @@ export default function MismatchLog({ t, mismatches, handleRetry, fetchMismatchL
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
+              {filteredMismatches.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-400 text-sm">
+                    No mismatch records for this filter
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

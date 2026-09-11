@@ -117,7 +117,7 @@ public class PaymentService {
         // ໃນລະຫວ່າງທີ່ mismatch ນີ້ຍັງບໍ່ resolve)
         if ("SUCCESS".equals(partnerResult) && !"SUCCESS".equals(bankResult)) {
             mismatch.setMismatchReason(
-                    bankResult);
+                    "ລູກຄ້າຈ່າຍສຳເລັດຝັ່ງ provider ແລ້ວ ແຕ່ bank ບັນທຶກວ່າ " + bankResult);
         } else {
             mismatch.setMismatchReason(
                     "Bank status (" + bankResult + ") ບໍ່ຕົງກັບ Partner status (" + partnerResult + ")");

@@ -61,9 +61,16 @@ public class BillInquiryService {
         txnRepo.save(txn);
 
         List<TransactionLog> logs = txnRepo.findByBillInvoice_StatementBillNo(invoice.getStatementBillNo());
-        boolean alreadyPaid = logs.stream()
-                .anyMatch(t -> "PAY".equals(t.getAction()) && "SUCCESS".equals(t.getStatus()));
-        invoice.setPaid(alreadyPaid);
+        TransactionLog paidTxn = logs.stream()
+                .filter(t -> "PAY".equals(t.getAction()) && "SUCCESS".equals(t.getStatus()))
+                .findFirst()
+                .orElse(null);
+
+        invoice.setPaid(paidTxn != null);
+        // ໃຊ້ resDate (ເວລາທີ່ໄດ້ຮັບການຢືນຢັນຈາກ provider) ຖ້າມີ, ບໍ່ດັ່ງນັ້ນໃຫ້ fallback ເປັນ txnDate
+        if (paidTxn != null) {
+            invoice.setPaymentDate(paidTxn.getResDate() != null ? paidTxn.getResDate() : paidTxn.getTxnDate());
+        }
 
         return invoice;
     }

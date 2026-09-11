@@ -89,4 +89,26 @@ GET /api/mismatch?resolutionStatus=OPEN&providerStatus=TIMEOUT   -> timeout ท�
 
 ## ข้อสังเกตเพิ่มเติม (ไม่ได้แก้ในรอบนี้)
 - `application.properties` มี DB credential จริงฝังอยู่ในไฟล์ (host, username, password) — สำหรับ production/ส่งงานจริงควรย้ายไป environment variable หรือ `.env` ที่ไม่ commit เข้า git
-- `ServiceMaster.java` มี typo ในชื่อ method: `getServiceCOde()` (ตัว O ใหญ่) — `MismatchDashboardDTO` เรียกตามชื่อเดิมเพื่อให้ compile ผ่าน ถ้าจะแก้ typo ต้องแก้พร้อมกันทุกจุดที่เรียกใช้
+
+## Sync กับโปรเจกต์ล่าสุด (มี Reports feature + UI ใหม่เพิ่มเข้ามาเอง)
+
+โปรเจกต์ที่อัปโหลดรอบนี้มีการพัฒนาต่อเอง (ฟีเจอร์ Reports, ปรับ UI receipt, แก้ typo `getServiceCode`)
+แต่ตอน merge กลับมีบางจุดของ mismatch/timeout ที่ทำไว้ก่อนหน้าขาดหายหรือถูกตัดทอน เลยแก้/sync ให้ครบดังนี้:
+
+### แก้ให้ตรงกับของเดิม
+- `service/PaymentService.java` — ข้อความ `[HIGH PRIORITY]` ใน mismatchReason (case payment status mismatch) ถูกตัดสั้นเหลือแค่ `bankResult` เฉยๆ ระหว่าง merge — คืนข้อความเต็มแล้ว
+- `dto/MismatchDashboardDTO.java` — ไม่ต้องแก้ เพราะ `getServiceCode()` (ไม่มี typo) ถูกใช้ถูกต้องอยู่แล้วในเวอร์ชันนี้ (typo `getServiceCOde` ถูกแก้ต้นทางที่ `ServiceMaster.java` เรียบร้อยแล้ว)
+
+### เพิ่มกลับเข้าไปใหม่ (หายไปตอน merge)
+- `entity/BillInvoice.java` — เพิ่ม `@Transient LocalDateTime paymentDate` (เดิมตั้งชื่อ `paidDate` แต่เปลี่ยนมาใช้ `paymentDate` ให้ตรงกับที่ frontend เวอร์ชันใหม่เรียกใช้ `billData.paymentDate`)
+- `service/BillInquiryService.java` — หา transaction ที่ PAY+SUCCESS แล้ว set `invoice.setPaymentDate(resDate ?: txnDate)` (ก่อนหน้านี้ใน zip ที่อัปมาเหลือแค่เช็ค boolean `alreadyPaid` เฉยๆ ไม่มีการคำนวณวันที่)
+
+### Frontend
+- `components/PaySimulator.jsx` — เพิ่ม `formatDateTime()` กลับเข้ามา แล้วใช้ format วันที่ให้อ่านง่ายทั้งจุดที่โชว์ `billData.paymentDate` (step 2) และ `receiptTime` (step 3 receipt ที่เพิ่งปรับ UI ใหม่) — คง layout/ดีไซน์ใหม่ที่ทำเองไว้ทั้งหมด แก้แค่การ format วันที่
+- `components/MismatchLog.jsx` — เพิ่ม dropdown filter ตาม `providerStatus` (All / SUCCESS / FAILED / TIMEOUT / UNKNOWN ตามที่มีข้อมูลจริง) filter ฝั่ง frontend จาก list ที่โหลดมาแล้ว พร้อมสีแยกชัดเจน: SUCCESS=เขียว, TIMEOUT=เหลือง/ส้ม, อื่นๆ=แดง (เดิมมีแค่เขียว/แดง 2 สี)
+  - หมายเหตุ: backend endpoint `GET /api/mismatch?providerStatus=` รองรับ filter แบบ server-side อยู่แล้ว ถ้า dataset ใหญ่ขึ้นในอนาคตแนะนำเปลี่ยนมาเรียก API ใหม่ทุกครั้งที่เปลี่ยน filter แทนการ filter ฝั่ง client
+
+### ไฟล์ที่ตรวจสอบแล้วว่าไม่มีอะไรขาด (identical กับที่เคยส่งไปก่อนหน้า)
+`repository/MismatchLogRepository.java`, `repository/TransactionLogRepository.java`, `service/MismatchService.java`,
+`controller/MismatchController.java`, `service/TimeoutMonitorService.java`, `service/RetryService.java`,
+`exception/PartnerTimeoutException.java`, `BillPaymentApplication.java`, `application.properties`

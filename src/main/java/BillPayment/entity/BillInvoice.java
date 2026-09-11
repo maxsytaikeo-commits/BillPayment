@@ -43,6 +43,11 @@ public class BillInvoice {
     // ຕັ້ງຄ່າຢູ່ BillInquiryService ກ່ອນ return ໃຫ້ Controller ທຸກຄັ້ງ
     @Transient
     private boolean paid;
+
+    // ວັນ/ເວລາທີ່ຈ່າຍສຳເລັດ (ມາຈາກ RES_DATE ຂອງ transaction PAY/SUCCESS ຫຼ້າສຸດ) - null ຖ້າຍັງບໍ່ຈ່າຍ
+    // ຊື່ field ນີ້ "paymentDate" ຕ້ອງກົງກັບທີ່ frontend (PaySimulator.jsx) ໃຊ້ billData.paymentDate
+    @Transient
+    private LocalDateTime paymentDate;
     // ================================================
 
     public BillInvoice(){
@@ -117,5 +122,12 @@ public class BillInvoice {
     }
     public void setPaid(boolean paid){
         this.paid = paid;
+    }
+
+    public LocalDateTime getPaymentDate(){
+        return paymentDate;
+    }
+    public void setPaymentDate(LocalDateTime paymentDate){
+        this.paymentDate = paymentDate;
     }
 }

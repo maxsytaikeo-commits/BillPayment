@@ -207,6 +207,7 @@ export default function App() {
       setReceiptInfo({ ...billData, ...txn });
       setPaymentStep(3);
       loadTransactions(); // ອັບເດດລາຍການ Monitoring ນຳ
+      loadMismatches(); // ອັບເດດລາຍການ Mismatch ຖ້າມີເກີດຂື້ນ
     } catch (err) {
       setConfirmError(err.message);
     } finally {

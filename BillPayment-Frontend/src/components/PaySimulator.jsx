@@ -42,6 +42,17 @@ export default function PaySimulator({
   const receiptProviderCode = receiptInfo?.provider?.providerCode || receiptInfo?.providerCode;
   const receiptTime = receiptInfo?.txnDate || receiptInfo?.payDate;
 
+  // billData.paymentDate ແລະ receiptTime ມາຈາກ backend ເປັນ ISO string (LocalDateTime) - ແປງໃຫ້ອ່ານງ່າຍຕາມພາສາ
+  const formatDateTime = (isoString) => {
+    if (!isoString) return '—';
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return isoString;
+    return d.toLocaleString(lang === 'lo' ? 'lo-LA' : 'en-US', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -189,6 +200,12 @@ export default function PaySimulator({
                   <span className="font-semibold text-slate-900">{t.totalAmount}</span>
                   <span className="font-semibold text-slate-900 text-lg">{billData.totalAmount?.toLocaleString()} LAK</span>
                 </div>
+                {isAlreadyPaid && billData.paymentDate && (
+                  <div className="flex justify-between pt-3 border-t border-slate-200 mt-3">
+                    <span className="text-slate-500 text-[13px]">{lang === 'lo' ? 'ວັນທີ່ຈ່າຍ' : 'Payment Date'}</span>
+                    <span className="font-medium text-emerald-700">{formatDateTime(billData.paymentDate)}</span>
+                  </div>
+                )}
               </div>
 
               {confirmError && (
@@ -231,16 +248,30 @@ export default function PaySimulator({
                 <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
                   <IconCheckCircle size={28} />
                 </div>
-                <p className="text-slate-900 font-medium text-sm">{t.successPayMsg.replace(/^\S+\s/, '')}</p>
+                <p className="text-slate-900 font-medium text-sm">{isAlreadyPaid ? (lang === 'lo' ? 'ໃບບິນນີ້ຖືກຈ່າຍໄປແລ້ວ' : 'This Bill Has Been Paid') : t.successPayMsg.replace(/^\S+\s/, '')}</p>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-5 text-left space-y-2 text-[13px] font-mono">
-                <p className="text-slate-500 pb-3 border-b border-slate-200 text-center font-sans font-semibold text-[13px] uppercase tracking-wide">{t.officialReceipt}</p>
-                <p><span className="text-slate-500">XREF</span> · {receiptInfo.xref}</p>
-                <p><span className="text-slate-500">Customer</span> · {receiptInfo.customerName}</p>
-                <p><span className="text-slate-500">Provider</span> · {providerName(receiptProviderCode)}</p>
-                <p><span className="text-slate-500">Total</span> · {receiptInfo.totalAmount?.toLocaleString()} LAK</p>
-                <p><span className="text-slate-500">Time</span> · {receiptTime}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 text-left space-y-3 text-[13px] font-mono whitespace-pre-line">
+                <p className="pb-4 border-b border-slate-200 text-center font-sans font-semibold text-[13px] uppercase tracking-wide">{t.officialReceipt}</p>
+                
+                <div className="space-y-2.5">
+                  <p>XREF · <span className="font-semibold text-slate-900">{receiptInfo.xref || 'TXN-' + (receiptInfo.id || '000000')}</span></p>
+                  <p>Customer · <span className="font-semibold text-slate-900">{receiptInfo.customerName}</span></p>
+                  <p>Service · <span className="font-semibold text-slate-900">{currentProvider?.service || serviceCode || 'N/A'}</span></p>
+                  <p>Provider · <span className="font-semibold text-slate-900">{providerName(receiptProviderCode)}</span></p>
+                  <p>Bill Amount · <span className="font-semibold text-slate-900">{receiptInfo.billAmount?.toLocaleString() || billData?.billAmount?.toLocaleString()} LAK</span></p>
+                  <p>Fee · <span className="font-semibold text-slate-900">{receiptInfo.feeAmount?.toLocaleString() || billData?.feeAmount?.toLocaleString()} LAK</span></p>
+                </div>
+
+                <p className="text-slate-400 text-xs leading-relaxed">━━━━━━━━━━━━━━━━━━━━</p>
+
+                <div className="space-y-2.5">
+                  <p>Total · <span className="font-semibold text-slate-900 text-sm">{receiptInfo.totalAmount?.toLocaleString()} LAK</span></p>
+                </div>
+
+                <p className="text-slate-400 text-xs leading-relaxed">━━━━━━━━━━━━━━━━━━━━</p>
+
+                <p>Payment Date · <span className="font-semibold text-slate-900">{receiptTime ? formatDateTime(receiptTime) : new Date().toLocaleString()}</span></p>
               </div>
 
               <button onClick={() => { setPaymentStep(1); setReceiptInfo(null); }} className="w-full flex items-center justify-center gap-2 bg-[#0f2942] hover:bg-[#16304d] text-white font-medium py-3 rounded-lg text-sm transition-colors">
